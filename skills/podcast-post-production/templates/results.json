@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "version": "0.2.0-rc.6.2-beta",
+  "executor": null,
+  "platform": null,
+  "actual_model": {
+    "value": null,
+    "verification": "NOT RUN"
+  },
+  "identity_start": null,
+  "identity_end": null,
+  "groups": [],
+  "items": [],
+  "human_full_review": "NOT RUN",
+  "release_ready": false,
+  "installed": false,
+  "discovery_activated": false,
+  "switched": false,
+  "published": false,
+  "channel": "beta",
+  "distribution": "public-beta",
+  "public_distribution_ready": true
+}

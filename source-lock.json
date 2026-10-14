@@ -1,0 +1,70 @@
+{
+  "base": {
+    "version": "0.1.0-rc.4",
+    "zip_sha256": "eef6ce48933031a7431a07f7efefb8bab1f42703bc04980c3f93f4c6a16942f0"
+  },
+  "renderer_updates": [
+    {
+      "mode": "audio-edit",
+      "repo": "caphinttytwo-code/edit-solo-podcasts-skill",
+      "commit": "2593bd221c9c38929250b77becc54bce3faf7df4",
+      "script": "scripts/render_podcast_edl.py",
+      "source_sha256": "690fca18e58066ce2d2615f019205e42669c5cc61a915a8217e0a03ee962b5d1",
+      "adapter": "source-adaptations/audio-edit.patch",
+      "runtime_path": "skills/podcast-post-production/modules/audio-edit/scripts/render_podcast_edl.py",
+      "runtime_sha256": "da79afdb344d2081e2066bfdbcbe216cf65159ef4d8ecde2762326cbf5d4c371",
+      "scope": "renderer-only compatibility update; all other module resources retain frozen rc4 provenance"
+    },
+    {
+      "mode": "video-conform",
+      "repo": "caphinttytwo-code/reference-audio-video-conform-skill",
+      "commit": "12570ab09db6fd2b1ad7adde6278813ab85dc4c1",
+      "script": "scripts/render_reference_conform.py",
+      "source_sha256": "2e9abdc46b4f34e85e8a105476dad706216b41e57ee2f50452a84bf88b076054",
+      "adapter": "source-adaptations/video-conform.patch",
+      "runtime_path": "skills/podcast-post-production/modules/video-conform/scripts/render_reference_conform.py",
+      "runtime_sha256": "47a5cf9e8df49703313fd845ddc8b769526e74de29a007e19786a501e4e42ecb",
+      "scope": "renderer-only compatibility update; all other module resources retain frozen rc4 provenance"
+    },
+    {
+      "mode": "trailers",
+      "repo": "caphinttytwo-code/batch-long-video-trailers",
+      "commit": "b256a28c03fcf6bdf19ce61cf3b7a0b57f1e50af",
+      "script": "scripts/extract_headframe_candidates.py",
+      "source_sha256": "2f24fd7c608a1d3c334af911ac1da6b19f0332fa4ef2ee39bfb123e56a6d5160",
+      "adapter": "source-adaptations/trailers.patch",
+      "runtime_path": "skills/podcast-post-production/modules/trailers/scripts/extract_headframe_candidates.py",
+      "runtime_sha256": "e1be99d4fde2b11beb3094829fc8506d6a7714fcd44811a588d507ed41318eb1",
+      "scope": "headframe-only compatibility update; all other resources retain frozen rc4 provenance"
+    }
+  ],
+  "source_policy": "Professional fixes in source repo PRs; reproduce guards via pinned adapters, never edit installed Skills.",
+  "asr_security_updates": [
+    {
+      "mode": "audio-edit",
+      "repo": "caphinttytwo-code/edit-solo-podcasts-skill",
+      "commit": "63327a79e4ceceb3f74f9328b4fba6ee9e50805f",
+      "script": "scripts/transcribe_stepfun.py",
+      "source_sha256": "a55944d9556b6fb0762e26a352e5e30c030670aeaecbd737afbf6696c2982c32",
+      "adapter": "source-adaptations/audio-edit-asr-rc6.patch",
+      "runtime_path": "skills/podcast-post-production/shared/stepfun_asr.py",
+      "runtime_sha256": "e993439c09b7b3a838005af78072fe791c546edd6d79e798ae93130aa98cad38",
+      "scope": "ASR redirect-security update only; package guards and lazy credentials preserved by adapter"
+    },
+    {
+      "mode": "trailers",
+      "repo": "caphinttytwo-code/batch-long-video-trailers",
+      "commit": "fa8756e5a03392603b4911090012e8f00fe8e57b",
+      "script": "scripts/transcribe_stepfun.py",
+      "source_sha256": "37db31a21028e57744094ae7cfe95f4a84574330b8c821e2bda515b0a12656da",
+      "adapter": "source-adaptations/trailers-asr-rc6.patch",
+      "runtime_path": "skills/podcast-post-production/shared/stepfun_asr.py",
+      "runtime_sha256": "e993439c09b7b3a838005af78072fe791c546edd6d79e798ae93130aa98cad38",
+      "scope": "ASR redirect-security update only; package guards and lazy credentials preserved by adapter"
+    }
+  ],
+  "rc6_base": {
+    "version": "0.1.0-rc.5",
+    "zip_sha256": "a143a2a17710ff57ba0502ef52b3de09395e364b0efa0ce61f74bad2e8f192e6"
+  }
+}

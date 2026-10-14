@@ -1,0 +1,368 @@
+{
+  "note": "Expected old options from prior baseline capture; independently invoke both frozen and candidate --help in this round. Historical results are not this round evidence.",
+  "scripts": [
+    {
+      "mode": "audio-edit",
+      "script": "scripts/analyze_pause_profile.py",
+      "expected_old_options": [
+        "--base-audio",
+        "--energy-thresholds",
+        "--help",
+        "--json-out",
+        "--reference-audio"
+      ]
+    },
+    {
+      "mode": "audio-edit",
+      "script": "scripts/audio_qa.py",
+      "expected_old_options": [
+        "--allowed-long-silences",
+        "--bitrate-tolerance-kbps",
+        "--expected-bit-depth",
+        "--expected-bitrate-kbps",
+        "--help",
+        "--human-approved",
+        "--human-reviewed-at",
+        "--human-reviewer",
+        "--json-out",
+        "--lufs-tolerance",
+        "--max-true-peak",
+        "--report-only",
+        "--require-release-ready",
+        "--silence-duration",
+        "--silence-threshold",
+        "--target-lufs"
+      ]
+    },
+    {
+      "mode": "audio-edit",
+      "script": "scripts/build_stage_transcript.py",
+      "expected_old_options": [
+        "--gap-ms",
+        "--help",
+        "--max-chars"
+      ]
+    },
+    {
+      "mode": "audio-edit",
+      "script": "scripts/compare_audio_reference.py",
+      "expected_old_options": [
+        "--baseline-edl",
+        "--baseline-transcript",
+        "--baseline-transcript-out",
+        "--direct-baseline",
+        "--help",
+        "--include-text",
+        "--json-out",
+        "--minimum-difference-seconds",
+        "--reference-role",
+        "--reference-transcript-out"
+      ]
+    },
+    {
+      "mode": "audio-edit",
+      "script": "scripts/compare_reference_edit.py",
+      "expected_old_options": [
+        "--baseline-audio",
+        "--baseline-duration",
+        "--baseline-edl",
+        "--context-chars",
+        "--help",
+        "--include-text",
+        "--json-out",
+        "--minimum-baseline-gap",
+        "--minimum-removed-seconds",
+        "--reference-audio",
+        "--reference-duration",
+        "--source-duration"
+      ]
+    },
+    {
+      "mode": "audio-edit",
+      "script": "scripts/editorial_qa.py",
+      "expected_old_options": [
+        "--editorial-reviewed-at",
+        "--editorial-reviewer",
+        "--help",
+        "--json-out",
+        "--logic-pass",
+        "--pacing-pass",
+        "--persona-pass",
+        "--reference-comparison",
+        "--report-only",
+        "--require-release-ready",
+        "--sentence-pass"
+      ]
+    },
+    {
+      "mode": "audio-edit",
+      "script": "scripts/render_podcast_edl.py",
+      "expected_old_options": [
+        "--also-output",
+        "--dry-run",
+        "--force",
+        "--help"
+      ]
+    },
+    {
+      "mode": "audio-edit",
+      "script": "scripts/transcribe_stepfun.py",
+      "expected_old_options": [
+        "--api-base-url",
+        "--channels",
+        "--dry-run",
+        "--force",
+        "--format",
+        "--gap-ms",
+        "--glob",
+        "--help",
+        "--hotword",
+        "--key-env",
+        "--keychain-service",
+        "--language",
+        "--max-chars",
+        "--model",
+        "--timeout"
+      ]
+    },
+    {
+      "mode": "video-conform",
+      "script": "scripts/build_acoustic_edl.py",
+      "expected_old_options": [
+        "--force",
+        "--fps",
+        "--help",
+        "--job-id",
+        "--project-root",
+        "--reference-audio",
+        "--skip-hashes",
+        "--soft-frames",
+        "--source-audio-start",
+        "--source-video"
+      ]
+    },
+    {
+      "mode": "video-conform",
+      "script": "scripts/calibrate_fast_seek.py",
+      "expected_old_options": [
+        "--help",
+        "--output",
+        "--pcm-start",
+        "--time"
+      ]
+    },
+    {
+      "mode": "video-conform",
+      "script": "scripts/calibrate_manifest_seeks.py",
+      "expected_old_options": [
+        "--help",
+        "--maximum-residual",
+        "--minimum-correlation",
+        "--output"
+      ]
+    },
+    {
+      "mode": "video-conform",
+      "script": "scripts/cleanup_conform.py",
+      "expected_old_options": [
+        "--delete-extra",
+        "--execute",
+        "--final",
+        "--help",
+        "--source"
+      ]
+    },
+    {
+      "mode": "video-conform",
+      "script": "scripts/make_approval_sample.py",
+      "expected_old_options": [
+        "--cut-id",
+        "--fps",
+        "--help",
+        "--max-duration",
+        "--output-dir",
+        "--post",
+        "--pre",
+        "--sample-id",
+        "--soft-frames",
+        "--source-pcm"
+      ]
+    },
+    {
+      "mode": "video-conform",
+      "script": "scripts/render_reference_conform.py",
+      "expected_old_options": [
+        "--crf",
+        "--execute",
+        "--fps",
+        "--help",
+        "--output",
+        "--preset",
+        "--seek-calibration",
+        "--soft-frames"
+      ]
+    },
+    {
+      "mode": "video-conform",
+      "script": "scripts/validate_edl.py",
+      "expected_old_options": [
+        "--content-check",
+        "--delivery-copy",
+        "--fps",
+        "--full-decode",
+        "--help",
+        "--maximum-content-lag",
+        "--minimum-content-correlation",
+        "--output",
+        "--reference-pcm",
+        "--source-pcm"
+      ]
+    },
+    {
+      "mode": "video-conform",
+      "script": "scripts/validate_srt.py",
+      "expected_old_options": [
+        "--allow-punctuation",
+        "--bad-term",
+        "--help",
+        "--json-out",
+        "--max-chars",
+        "--media-duration",
+        "--video"
+      ]
+    },
+    {
+      "mode": "trailers",
+      "script": "scripts/build_srt_from_timestamps.py",
+      "expected_old_options": [
+        "--cues",
+        "--help",
+        "--max-chars",
+        "--output",
+        "--report",
+        "--timestamps",
+        "--video-duration-ms"
+      ]
+    },
+    {
+      "mode": "trailers",
+      "script": "scripts/build_visuals.py",
+      "expected_old_options": [
+        "--help"
+      ]
+    },
+    {
+      "mode": "trailers",
+      "script": "scripts/extract_headframe_candidates.py",
+      "expected_old_options": [
+        "--dry-run",
+        "--force",
+        "--help"
+      ]
+    },
+    {
+      "mode": "trailers",
+      "script": "scripts/qa_outputs.py",
+      "expected_old_options": [
+        "--help"
+      ]
+    },
+    {
+      "mode": "trailers",
+      "script": "scripts/render_batch.py",
+      "expected_old_options": [
+        "--dry-run",
+        "--force",
+        "--help",
+        "--only"
+      ]
+    },
+    {
+      "mode": "trailers",
+      "script": "scripts/render_review_proxies.py",
+      "expected_old_options": [
+        "--dry-run",
+        "--force",
+        "--help"
+      ]
+    },
+    {
+      "mode": "trailers",
+      "script": "scripts/subtitle_qa.py",
+      "expected_old_options": [
+        "--allow-punctuation",
+        "--bad-term",
+        "--filler",
+        "--help",
+        "--json-out",
+        "--max-chars",
+        "--media-duration"
+      ]
+    },
+    {
+      "mode": "trailers",
+      "script": "scripts/transcribe_stepfun.py",
+      "expected_old_options": [
+        "--api-base-url",
+        "--channels",
+        "--dry-run",
+        "--force",
+        "--format",
+        "--gap-ms",
+        "--glob",
+        "--help",
+        "--hotword",
+        "--key-env",
+        "--keychain-service",
+        "--language",
+        "--max-chars",
+        "--model",
+        "--timeout"
+      ]
+    },
+    {
+      "mode": "locked-revision",
+      "script": "scripts/retime_srt.py",
+      "expected_old_options": [
+        "--edits",
+        "--help",
+        "--input",
+        "--output",
+        "--report"
+      ]
+    },
+    {
+      "mode": "locked-revision",
+      "script": "scripts/validate_locked_revision.py",
+      "expected_old_options": [
+        "--ffprobe",
+        "--help",
+        "--report"
+      ]
+    },
+    {
+      "mode": "project-audit",
+      "script": "scripts/compare_manifests.py",
+      "expected_old_options": [
+        "--help",
+        "--report"
+      ]
+    },
+    {
+      "mode": "project-audit",
+      "script": "scripts/inventory_project.py",
+      "expected_old_options": [
+        "--help",
+        "--stem"
+      ]
+    },
+    {
+      "mode": "project-audit",
+      "script": "scripts/verify_backups.py",
+      "expected_old_options": [
+        "--help",
+        "--report"
+      ]
+    }
+  ]
+}

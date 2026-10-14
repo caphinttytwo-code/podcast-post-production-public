@@ -1,0 +1,161 @@
+--- a/scripts/extract_headframe_candidates.py
++++ b/scripts/extract_headframe_candidates.py
+@@ -3,6 +3,33 @@
+ 
+ from __future__ import annotations
+ 
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import outside_package, child_output, distinct_output
++
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args
++
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.media import probe_json
++
++
++from pathlib import Path as _PackagePath
++import sys as _package_sys
++_PACKAGE_ROOT = _PackagePath(__file__).resolve().parents[3]
++if str(_PACKAGE_ROOT) not in _package_sys.path:
++    _package_sys.path.insert(0, str(_PACKAGE_ROOT))
++from shared.files import sha256 as sha256
++
++
++from shared.fonts import load_font
+ import argparse
+ import hashlib
+ import json
+@@ -42,12 +69,6 @@
+     return f"{hours:02d}:{minutes:02d}:{secs:02d}.{ms:03d}"
+ 
+ 
+-def sha256(path: Path) -> str:
+-    digest = hashlib.sha256()
+-    with path.open("rb") as handle:
+-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+-            digest.update(chunk)
+-    return digest.hexdigest()
+ 
+ 
+ def safe_name(value: str) -> str:
+@@ -56,14 +77,10 @@
+ 
+ 
+ def probe(path: Path, ffprobe: str) -> dict:
+-    result = subprocess.run([
+-        ffprobe, "-v", "error", "-select_streams", "v:0",
+-        "-show_entries", "stream=width,height,avg_frame_rate:format=duration",
+-        "-of", "json", str(path),
+-    ], capture_output=True, text=True)
+-    if result.returncode:
+-        raise RuntimeError(result.stderr.strip() or f"cannot probe {path}")
+-    payload = json.loads(result.stdout)
++    try:
++        payload = probe_json(path, ffprobe=ffprobe, entries='stream=width,height,avg_frame_rate:format=duration', selector='v:0')
++    except subprocess.CalledProcessError as exc:
++        raise RuntimeError(exc.stderr.strip() or f"cannot probe {path}") from exc
+     stream = payload.get("streams", [{}])[0]
+     return {
+         "duration": float(payload.get("format", {}).get("duration") or 0),
+@@ -104,16 +121,7 @@
+ 
+ 
+ def font(path: Path | None, size: int):
+-    if path and path.is_file():
+-        return ImageFont.truetype(str(path), size)
+-    for candidate in (
+-        "/System/Library/Fonts/PingFang.ttc",
+-        "/System/Library/Fonts/Supplemental/Songti.ttc",
+-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+-    ):
+-        if Path(candidate).exists():
+-            return ImageFont.truetype(candidate, size)
+-    return ImageFont.load_default()
++    return load_font(path, size)
+ 
+ 
+ def contain_preview(source: Path, size: tuple[int, int], background: tuple[int, int, int]) -> Image.Image:
+@@ -142,7 +150,8 @@
+ 
+ 
+ def extract(ffmpeg: str, video: Path, timestamp: float, output: Path) -> None:
+-    temporary = output.with_name(f".{output.stem}.tmp.png")
++    child_output(output.parent, output.name, video)
++    temporary = child_output(output.parent, f".{output.stem}.tmp.png", video)
+     if temporary.exists():
+         temporary.unlink()
+     result = subprocess.run([
+@@ -162,10 +171,11 @@
+     parser.add_argument("--dry-run", action="store_true")
+     parser.add_argument("--force", action="store_true")
+     args = parser.parse_args()
++    protect_output_args(args)
+     config_path = args.config.resolve()
+     base = config_path.parent
+     config = json.loads(config_path.read_text(encoding="utf-8"))
+-    output_dir = resolved(base, config["output_dir"])
++    output_dir = outside_package(resolved(base, config["output_dir"]))
+     background = parse_color(str(config.get("background", "#202020")))
+     label_font_path = resolved(base, config["font_file"]) if config.get("font_file") else None
+     label_font = font(label_font_path, int(config.get("label_size", 20)))
+@@ -177,6 +187,11 @@
+             plan.append({"job": str(job["id"]), "video": video, "rank": rank, **candidate})
+     if not plan:
+         raise ValueError("configuration has no candidate jobs")
++    protected = [args.config, *(item['video'] for item in plan)]
++    if label_font_path: protected.append(label_font_path)
++    manifest_path = child_output(output_dir, str(config.get("manifest_name", "candidate-manifest.json")), *protected)
++    selection_path = child_output(output_dir, str(config.get("selection_name", "candidate-selection.md")), *protected)
++    distinct_output(selection_path, manifest_path)
+     if args.dry_run:
+         print(json.dumps([
+             {**item, "video": str(item["video"]), "timecode": clock(item["time"])} for item in plan
+@@ -195,7 +210,7 @@
+         grouped.setdefault(item["job"], []).append(item)
+     for job_id, candidates in grouped.items():
+         video = candidates[0]["video"]
+-        job_dir = output_dir / safe_name(job_id)
++        job_dir = child_output(output_dir, safe_name(job_id), *protected)
+         if not video.is_file():
+             failures.append({"job": job_id, "error": f"missing video: {video}"})
+             continue
+@@ -207,9 +222,9 @@
+                 if item["time"] < 0 or item["time"] >= source_probe["duration"]:
+                     raise ValueError(f"timestamp outside video duration: {clock(item['time'])}")
+                 stem = f"{safe_name(job_id)}__{item['rank']:02d}__{clock(item['time']).replace(':', '-')}"
+-                original = job_dir / "original" / f"{stem}.png"
+-                delivery = job_dir / "delivery-preview" / f"{stem}.png"
+-                mobile = job_dir / "mobile-preview" / f"{stem}.png"
++                original = child_output(output_dir, f"{safe_name(job_id)}/original/{stem}.png", *protected)
++                delivery = child_output(output_dir, f"{safe_name(job_id)}/delivery-preview/{stem}.png", *protected)
++                mobile = child_output(output_dir, f"{safe_name(job_id)}/mobile-preview/{stem}.png", *protected)
+                 for path in (original, delivery, mobile):
+                     path.parent.mkdir(parents=True, exist_ok=True)
+                 if original.exists() and not args.force:
+@@ -231,7 +246,7 @@
+                 job_entries.append(entry)
+             except Exception as exc:
+                 failures.append({"job": job_id, "rank": item["rank"], "error": str(exc)})
+-        sheet = job_dir / f"{safe_name(job_id)}-contact-sheet.jpg"
++        sheet = child_output(output_dir, f"{safe_name(job_id)}/{safe_name(job_id)}-contact-sheet.jpg", *protected)
+         if job_entries:
+             contact_sheet(job_entries, sheet, background, label_font)
+         for entry in job_entries:
+@@ -245,8 +260,6 @@
+         })
+     manifest["failures"] = failures
+     manifest["ok"] = not failures and all(job["source_unchanged"] for job in manifest["jobs"])
+-    manifest_path = output_dir / str(config.get("manifest_name", "candidate-manifest.json"))
+-    selection_path = output_dir / str(config.get("selection_name", "candidate-selection.md"))
+     output_dir.mkdir(parents=True, exist_ok=True)
+     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+     lines = ["# Headframe Candidate Selection", "", "- Status: `candidate_pending_user_confirmation`", "- Technical validation does not mean final selection.", ""]
