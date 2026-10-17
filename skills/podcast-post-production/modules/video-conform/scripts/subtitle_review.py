@@ -23,11 +23,12 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from shared.files import outside_package, distinct_output, child_output
 
+from subtitle_policy import numeric_literals, mask_literals, format_policy, validate_exceptions
 from validate_srt import Cue, parse_srt, validate_srt, video_duration
 
 SCHEMA = 1
 DECISIONS = (None, 'accept', 'edit', 'uncertain')
-NUMBERS = re.compile(r'\d+(?:[.点]\d+)?(?:%|％)?|第[零〇一二三四五六七八九十百千万亿两]+|[零〇一二三四五六七八九十百千万亿两]+(?:分之[零〇一二三四五六七八九十百千万亿两]+|年代|厘米|毫米|公里|年|月|日|岁|米|斤|两|克|元|成|个|次|倍|分|秒|万|亿|人|名|位|家|户|件|份|套|块|页|章|期|滴|项)?')
+NUMBERS = re.compile(r'\d+(?:[.点]\d+)?(?:%|％|‰)?|第[零〇一二三四五六七八九十百千万亿两]+|[零〇一二三四五六七八九十百千万亿两]+(?:分之[零〇一二三四五六七八九十百千万亿两]+|年代|厘米|毫米|公里|年|月|日|岁|米|斤|两|克|元|成|个|次|倍|分|秒|万|亿|人|名|位|家|户|件|份|套|块|页|章|期|滴|项)?')
 
 
 def sha(path):
@@ -88,8 +89,30 @@ def safe_evidence(value):
     return re.sub(r'https?://\S+', '[链接已省略]', value)
 
 
-def normalize_compact(text, protected_terms=()):
+def normalize_compact(text, protected_terms=(), *, numeric_style='spoken', approved_literals=()):
     """Convert unambiguous numeric notation BEFORE punctuation removal. Do not infer facts."""
+    numeric_literals('', numeric_style)
+    if numeric_style == 'arabic' or approved_literals:
+        lines = text.splitlines()
+        check_sign = '\n'.join(line[1:] for line in lines) if len(lines) == 2 and all(line.startswith('-') for line in lines) else text
+        if numeric_style == 'arabic' and re.search(r'(?<!\d)[-−–－﹣]\d', mask_literals(check_sign, approved_literals)):
+            raise ValueError('negative number requires an explicit reviewed literal')
+        literals = list(approved_literals) + [t for t in numeric_literals(text, numeric_style) if any(c in t for c in '.．%％‰')]
+        mask_literals(text, literals)  # validate tokens before masking
+        masked, restore = text, {}
+        for i, literal in enumerate(sorted(set(literals), key=len, reverse=True)):
+            token = 'LITERAL' + chr(65+i//26) + chr(65+i%26) + 'TOKEN'
+            if token in text:
+                raise ValueError('literal marker collision')
+            restore[token] = literal
+            masked = masked.replace(literal, token)
+        if numeric_style == 'arabic' and (re.search(r'[%‰/]|\d\s*[:：~～—–－-]\s*\d', masked)):
+            raise ValueError('ambiguous numeric notation needs review')
+        safe_terms = [t for t in protected_terms if t not in literals]
+        result = normalize_compact(masked, safe_terms)
+        for token, literal in restore.items():
+            result = result.replace(token, literal)
+        return result
     if any(t in text and any(unicodedata.category(c)[0] in 'PS' for c in t) for t in protected_terms):
         raise ValueError('protected term needs a documented punctuation exception')
     raw_lines = text.splitlines()
@@ -143,12 +166,15 @@ def scan_numbers(srt, protected_terms=()):
         mentions = [m.group() for m in NUMBERS.finditer(masked)]
         if mentions:
             results.append(dict(cue_numbers=[cue.number], kind='numeric', priority=False,
-                                question='核对数字 单位 范围及所指人群或阶段', mentions=mentions))
+                                question='核对数字 单位 范围及所指人群或阶段', mentions=mentions,
+                                original_text=text, suggested_text=text, unit_note='', needs_review=True,
+                                start_ms=round(cue.start*1000), end_ms=round(cue.end*1000)))
     return results
 
 
 def build_review(srt, items, workdir, *, audio=None, media_duration=None, profile=None,
-                 context_seconds=5.0, protected_terms=(), validation_overrides=None):
+                 context_seconds=5.0, protected_terms=(), validation_overrides=None,
+                 numeric_style='spoken', numeric_review='uncertain', format_exceptions=None):
     outside_package(workdir)
     distinct_output(workdir, srt, *([audio] if audio else []))
     srt, workdir = Path(srt).resolve(), Path(workdir).resolve()
@@ -160,7 +186,17 @@ def build_review(srt, items, workdir, *, audio=None, media_duration=None, profil
                               max_chars=10**9, enforce_house_style=False)
     if not structural['ok']:
         raise ValueError(str(structural['errors']))
+    numeric_literals('', numeric_style)
+    if numeric_review not in ('all', 'uncertain'):
+        raise ValueError('unknown numeric review scope')
+    numeric_candidates = scan_numbers(srt, protected_terms)
+    if numeric_review == 'all':
+        covered = {n for item in items for n in item['cue_numbers']}
+        items = list(items) + [dict(item, id=f'numeric-{item["cue_numbers"][0]}')
+                               for item in numeric_candidates if item['cue_numbers'][0] not in covered]
     baseline_hash = sha(srt)
+    baseline_text = srt.read_text(encoding='utf-8-sig')
+    validate_exceptions(baseline_text, cues, format_exceptions)
     validation_overrides = dict(validation_overrides or {})
     if set(validation_overrides) - {'max_chars', 'max_lines', 'max_screen_chars', 'enforce_house_style'}:
         raise ValueError('unknown style override')
@@ -175,6 +211,21 @@ def build_review(srt, items, workdir, *, audio=None, media_duration=None, profil
         if not numbers or any(type(n) is not int or not 1 <= n <= len(cues) for n in numbers) or len(set(numbers)) != len(numbers):
             raise ValueError('invalid or duplicate cue targets')
         numbers = sorted(numbers)
+        operation = item.get('operation', 'replace')
+        if operation not in ('replace', 'merge'):
+            raise ValueError('unknown review operation')
+        if operation == 'merge' and (len(numbers) < 2 or numbers != list(range(numbers[0], numbers[-1]+1))):
+            raise ValueError('merge requires contiguous explicitly targeted cues')
+        suggested = item.get('suggested_text')
+        if suggested is not None and not isinstance(suggested, str):
+            raise ValueError('suggested text must be plain text')
+        literals = item.get('format_literals', [])
+        if not isinstance(literals, list):
+            raise ValueError('format literals must be a list')
+        if literals:
+            if not suggested or any(not t or t not in suggested for t in literals):
+                raise ValueError('format literals need exact proposed text')
+            mask_literals(suggested, literals)
         ident = item.get('id') or 'review-' + hashlib.sha256((baseline_hash + ':' + ','.join(map(str, numbers)) + ':' + str(index)).encode()).hexdigest()[:16]
         if not re.fullmatch(r'[A-Za-z0-9_-]+', ident) or ident in seen:
             raise ValueError('invalid or duplicate review ID')
@@ -193,6 +244,12 @@ def build_review(srt, items, workdir, *, audio=None, media_duration=None, profil
                                    context_after=[''.join(c.lines) for c in cues[numbers[-1]:numbers[-1]+2]],
                                    question=safe_evidence(item.get('question', '请核对这一处')),
                                    kind=item.get('kind', 'text'), priority=bool(item.get('priority')),
+                                   numeric_cue_numbers=[n for n in numbers if any(n in x['cue_numbers'] for x in numeric_candidates)],
+                                   operation=operation, suggested_text=safe_evidence(suggested) if suggested is not None else None,
+                                   unit_note=safe_evidence(item.get('unit_note', '')),
+                                   original_text=safe_evidence(item.get('original_text', '\n\n'.join('\n'.join(cues[n-1].lines) for n in numbers))),
+                                   group_label=safe_evidence(item.get('group_label', '')),
+                                   format_literals=literals,
                                    evidence=evidence, prior_confirmation=prior,
                                    clip_start=start, clip_end=end,
                                    audio=f'audio/{ident}.mp3' if audio else None))
@@ -202,7 +259,9 @@ def build_review(srt, items, workdir, *, audio=None, media_duration=None, profil
                     media_duration=duration, profile=profile, validation_overrides=validation_overrides,
                     protected_terms=list(protected_terms), items=manifest_items,
                     audio_source_path=str(Path(audio).resolve()) if audio else None,
-                    audio_source_sha256=sha(audio) if audio else None)
+                    audio_source_sha256=sha(audio) if audio else None,
+                    numeric_style=numeric_style, numeric_review=numeric_review,
+                    numeric_candidates=numeric_candidates, format_exceptions=format_exceptions)
     write_json(workdir/'manifest.json', manifest)
     state = dict(schema_version=SCHEMA, baseline_sha256=baseline_hash, revision=0, items=[
         dict(id=x['id'], decision='accept' if x['prior_confirmation'] else None,
@@ -278,14 +337,20 @@ def apply_review(workdir, output, *, source=None):
         raise FileExistsError('refusing existing output or audit directory')
     cues = read_cues(baseline)
     items = {x['id']: x for x in manifest['items']}
-    occupied, changes, pending, ledger = set(), [], [], []
+    original = list(cues)
+    baseline_text = baseline.read_text(encoding='utf-8-sig')
+    existing_exceptions = validate_exceptions(baseline_text, cues, manifest.get('format_exceptions'))
+    exception_rows = {e['cue_number']: e for e in (manifest.get('format_exceptions') or {}).get('entries', [])}
+    removed, merged_origins = set(), {}
+    occupied, confirmed, changes, pending, ledger = set(), set(), [], [], []
     for response in state['items']:
         item = items[response['id']]
         numbers = [t['cue_number'] for t in item['targets']]
         if len(numbers) != len(set(numbers)):
             raise ValueError('duplicate target in manifest')
         for target in item['targets']:
-            if list(cues[target['cue_number']-1].lines) != target['before_lines']:
+            original_target = original[target['cue_number']-1]
+            if (list(original_target.lines) != target['before_lines'] or round(original_target.start*1000) != target['start_ms'] or round(original_target.end*1000) != target['end_ms']):
                 raise ValueError('target no longer matches baseline')
         row = dict(id=item['id'], cue_numbers=numbers, decision=response['decision'],
                    action_source=response.get('action_source'), note=response['note'])
@@ -297,41 +362,89 @@ def apply_review(workdir, output, *, source=None):
             blocks = re.split(r'\n[ \t]*\n', response['corrected_text'].strip())
             replacements = []
             try:
-                if len(blocks) != len(numbers):
+                merge = item.get('operation') == 'merge'
+                if merge and numbers != list(range(numbers[0], numbers[-1]+1)):
+                    raise ValueError('merge requires adjacent targets')
+                targets = [numbers[0]] if merge else numbers
+                if len(blocks) != len(targets):
                     raise ValueError('cue count changed; needs sentence splitting and real timing anchors')
-                for n, block in zip(numbers, blocks):
+                proposed_literals = item.get('format_literals', [])
+                if proposed_literals and response['corrected_text'].strip() != item.get('suggested_text'):
+                    raise ValueError('format exception text differs from reviewed proposal')
+                if proposed_literals and len(targets) != 1:
+                    raise ValueError('format exceptions require one replacement or merge result')
+                for n, block in zip(targets, blocks):
+                    allowed = list(proposed_literals)
+                    if block == '\n'.join(original[n-1].lines):
+                        allowed += existing_exceptions.get(n, [])
                     if manifest['profile'] == 'compact-clean' and manifest['validation_overrides'].get('enforce_house_style', True):
-                        block = normalize_compact(block, manifest['protected_terms'])
-                    candidate = replace(cues[n-1], lines=tuple(block.splitlines()))
-                    qa = validate_srt(render_srt([replace(candidate, number=1)]),
+                        block = normalize_compact(block, manifest['protected_terms'],
+                                                  numeric_style=manifest.get('numeric_style', 'spoken'), approved_literals=allowed)
+                    candidate = replace(original[n-1], end=original[numbers[-1]-1].end if merge else original[n-1].end, lines=tuple(block.splitlines()))
+                    sample_text = render_srt([replace(candidate, number=1)])
+                    local_exceptions = format_policy(sample_text, [dict(cue_number=1, text=block, literals=allowed,
+                        approval_basis='submitted edit in frozen review snapshot')]) if allowed else None
+                    qa = validate_srt(sample_text, numeric_style=manifest.get('numeric_style', 'spoken'), format_exceptions=local_exceptions,
                                       media_duration=manifest['media_duration'], profile=manifest['profile'],
                                       **manifest['validation_overrides'])
                     if not qa['ok']:
                         raise ValueError('needs reflow or timing review: ' + '; '.join(qa['errors']))
-                    replacements.append((n, candidate))
+                    replacements.append((n, candidate, allowed))
             except ValueError as exc:
                 row['status'] = 'pending_reflow_or_timing'
                 pending.append(dict(id=item['id'], reason=str(exc), submitted_text=response['corrected_text']))
             else:
-                for n, candidate in replacements:
+                if merge:
+                    removed.update(numbers[1:])
+                    merged_origins[numbers[0]] = numbers
+                    for old in numbers[1:]:
+                        exception_rows.pop(old, None)
+                for n, candidate, allowed in replacements:
+                    exception_rows.pop(n, None)
+                    if allowed:
+                        exception_rows[n] = dict(cue_number=n, text='\n'.join(candidate.lines), literals=allowed,
+                                                approval_basis='submitted edit in frozen review snapshot')
                     changes.append(dict(cue_number=n, before=list(cues[n-1].lines), after=list(candidate.lines),
                                         start=candidate.start, end=candidate.end, submitted_text=response['corrected_text'],
-                                        timing_basis='unchanged original phrase boundaries; no new word timestamps'))
+                                        timing_basis='union of original adjacent phrase boundaries; no new word timestamps' if merge else 'unchanged original phrase boundaries; no new word timestamps',
+                                        original_cues=[dict(cue_number=k, text='\n'.join(original[k-1].lines), start=original[k-1].start, end=original[k-1].end) for k in (numbers if merge else [n])],
+                                        original_cue_numbers=numbers if merge else [n], original_start=original[n-1].start,
+                                        original_end=original[numbers[-1]-1].end if merge else original[n-1].end))
                     cues[n-1] = candidate
+                confirmed.update(numbers)
                 row['status'] = 'applied_edit'
         elif response['decision'] == 'uncertain':
             row['status'] = 'awaiting_listening'
             pending.append(dict(id=item['id'], reason=response['note'] or '用户拿不准'))
         else:
+            if response['decision'] == 'accept':
+                confirmed.update(numbers)
             row['status'] = 'confirmed_unchanged' if response['decision'] == 'accept' else 'unselected_retained'
         ledger.append(row)
-    text = render_srt(cues)
-    report = validate_srt(text, media_duration=manifest['media_duration'], profile=manifest['profile'],
+    final, cue_map, final_exceptions = [], [], []
+    for old, cue in enumerate(cues, 1):
+        if old in removed:
+            continue
+        new = len(final)+1
+        final.append(replace(cue, number=new))
+        cue_map.extend(dict(old_cue=n, new_cue=new) for n in merged_origins.get(old, [old]))
+        if old in exception_rows:
+            final_exceptions.append(dict(exception_rows[old], cue_number=new))
+    text = render_srt(final)
+    output_policy = format_policy(text, final_exceptions)
+    report = validate_srt(text, numeric_style=manifest.get('numeric_style', 'spoken'), format_exceptions=output_policy, media_duration=manifest['media_duration'], profile=manifest['profile'],
                           **manifest['validation_overrides'])
-    report.update(decision_counts=dict(Counter(x['decision'] or 'unselected' for x in state['items'])),
+    numeric_candidates = manifest.get('numeric_candidates')
+    if numeric_candidates is None:
+        numeric_candidates = scan_numbers(baseline, manifest.get('protected_terms', []))
+    numeric_unconfirmed = [n for x in numeric_candidates for n in x['cue_numbers'] if n not in confirmed]
+    report.update(all_numbers_human_confirmed=not numeric_unconfirmed and not pending,
+                  decision_counts=dict(Counter(x['decision'] or 'unselected' for x in state['items'])),
                   prior_confirmation_count=sum(x.get('action_source') == 'prior_confirmation' and x['decision'] == 'accept' for x in state['items']),
                   all_items_human_confirmed=all(x['decision'] in ('accept','edit') for x in state['items']) and not pending,
                   human_full_audio_review=False, semantic_review_completed_by_tool=False,
+                  cue_map=cue_map, numeric_review=manifest.get('numeric_review', 'uncertain'),
+                  numeric_unconfirmed_cues=numeric_unconfirmed,
                   model_calls_performed_by_tool=False, pending=pending, changes=changes,
                   status='review_draft' if pending else 'submitted_decisions_applied',
                   new_asr_calls=0, baseline_sha256=manifest['baseline_sha256'],
@@ -344,6 +457,8 @@ def apply_review(workdir, output, *, source=None):
     (audit/'submitted-decisions.json').write_bytes(state_bytes)
     write_json(audit/'manifest.json', manifest)
     write_json(audit/'ledger.json', ledger)
+    write_json(audit/'cue-map.json', cue_map)
+    write_json(audit/'format-exceptions.json', output_policy)
     write_json(audit/'qa.json', report)
     # Exclusive creation protects an existing version, even against a concurrent writer.
     with output.open('x', encoding='utf-8') as handle:
@@ -355,14 +470,14 @@ def apply_review(workdir, output, *, source=None):
 
 PAGE = '''<!doctype html><html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>字幕复听确认</title>
 <style>body{font:17px system-ui;max-width:960px;margin:30px auto;padding:0 18px;background:#f5f5f2;color:#222}header{position:sticky;top:0;background:#f5f5f2;padding:12px 0}article{background:white;padding:22px;margin:18px 0;border-radius:12px}pre{white-space:pre-wrap;line-height:1.7}textarea{width:95%;min-height:85px;font:inherit}button,select{font:inherit;margin:6px;padding:8px}audio{width:100%}.context{color:#666;font-size:15px}.badge{color:#8a4c00}</style>
-<header><h1>字幕复听确认</h1><p id="counts"></p><select id="filter"><option value="all">全部</option><option value="priority">重点项</option><option value="pending">未选择</option><option value="uncertain">拿不准</option><option value="done">已处理</option></select><button id="bulk">确认全部未选择项采用当前文字</button><button id="save">保存结论</button><span id="status"></span></header><main id="list"></main>
+<header><h1>字幕复听确认</h1><p id="counts"></p><select id="filter"><option value="all">全部</option><option value="priority">重点项</option><option value="numeric">数字项</option><option value="pending">未选择</option><option value="uncertain">拿不准</option><option value="done">已处理</option></select><button id="bulk">确认全部未选择项采用当前文字</button><button id="save">保存结论</button><span id="status"></span></header><main id="list"></main>
 <script>
 let manifest,state,queue=Promise.resolve();const $=id=>document.getElementById(id);
-function time(ms){const s=Math.floor(ms/1000);return `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor(s/60)%60<10?'0':''}${Math.floor(s/60)%60}:${(s%60).toString().padStart(2,'0')}`}
+function time(ms){const s=Math.floor(ms/1000);return `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor(s/60)%60<10?'0':''}${Math.floor(s/60)%60}:${(s%60).toString().padStart(2,'0')}.${(ms%1000).toString().padStart(3,'0')}`}
 function el(tag,text){const x=document.createElement(tag);if(text!==undefined)x.textContent=text;return x}
 function stats(){const c={};state.items.forEach(x=>{const k=x.decision||'未选择';c[k]=(c[k]||0)+1});$('counts').textContent=`总计 ${state.items.length} 项　保留 ${c.accept||0}　修改 ${c.edit||0}　拿不准 ${c.uncertain||0}　未选择 ${c['未选择']||0}　历史确认 ${state.items.filter(x=>x.action_source==='prior_confirmation'&&x.decision==='accept').length}`}
 function save(){queue=queue.then(async()=>{const payload=JSON.parse(JSON.stringify(state));$('status').textContent='保存中';const r=await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await r.json();if(!r.ok)throw Error(data.error||'保存失败');state.revision=data.revision;$('status').textContent='已保存';}).catch(e=>{$('status').textContent='未保存 '+e.message;});return queue}
-function render(){stats();$('list').replaceChildren();manifest.items.forEach(item=>{const row=state.items.find(x=>x.id===item.id),f=$('filter').value;if(f==='priority'&&!item.priority||f==='pending'&&row.decision!==null||f==='uncertain'&&row.decision!=='uncertain'||f==='done'&&!['accept','edit'].includes(row.decision))return;const card=el('article');card.append(el('h2',item.id+'　字幕 '+item.targets.map(x=>x.cue_number).join('、')));card.append(el('p',item.targets.map(x=>time(x.start_ms)+' 至 '+time(x.end_ms)).join('　')));if(item.priority)card.append(el('p','重点核对'));card.append(el('p',item.question));const ctx=el('p','前文 '+item.context_before.join('　'));ctx.className='context';card.append(ctx,el('pre',item.current_text));if(item.audio){const a=el('audio');a.controls=true;a.preload='none';a.src='/'+item.audio;card.append(a)}const after=el('p','后文 '+item.context_after.join('　'));after.className='context';card.append(after);if(item.prior_confirmation)card.append(el('p','历史确认依据 '+item.prior_confirmation));const details=el('details');details.append(el('summary','识别证据'));Object.entries(item.evidence).forEach(([k,v])=>details.append(el('h3',k),el('pre',v)));card.append(details);const edit=el('textarea');edit.value=row.corrected_text;edit.setAttribute('aria-label','修改后的字幕 多条字幕之间留一个空行');edit.oninput=()=>{row.corrected_text=edit.value;save()};card.append(edit);['accept','edit','uncertain'].forEach((v,i)=>{const b=el('button',['保留当前文字','使用修改文字','拿不准'][i]);b.setAttribute('aria-pressed',String(row.decision===v));b.onclick=()=>{row.decision=v;row.action_source='individual';stats();save();card.querySelectorAll('button[aria-pressed]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))};card.append(b)});const clear=el('button','撤销选择');clear.onclick=()=>{row.decision=null;row.action_source=null;render();save()};card.append(clear);const note=el('textarea');note.value=row.note;note.placeholder='备注或疑问';note.setAttribute('aria-label','备注');note.oninput=()=>{row.note=note.value;save()};card.append(note);$('list').append(card)})}
+function render(){stats();$('list').replaceChildren();manifest.items.forEach(item=>{const row=state.items.find(x=>x.id===item.id),f=$('filter').value;if(f==='numeric'&&item.kind!=='numeric'&&!item.numeric_cue_numbers?.length||f==='priority'&&!item.priority||f==='pending'&&row.decision!==null||f==='uncertain'&&row.decision!=='uncertain'||f==='done'&&!['accept','edit'].includes(row.decision))return;const card=el('article');card.append(el('h2',item.id+'　字幕 '+item.targets.map(x=>x.cue_number).join('、')));card.append(el('p',item.targets.map(x=>time(x.start_ms)+' 至 '+time(x.end_ms)).join('　')));if(item.priority)card.append(el('p','重点核对'));card.append(el('p',item.question));if(item.operation==='merge')card.append(el('p','合并相邻字幕 使用修改文字后保留首尾真实时间'));if(item.group_label)card.append(el('p','分组 '+item.group_label+' 每处单独确认'));if(item.original_text)card.append(el('pre','原文（缺少来源时为字幕底稿） '+item.original_text));if(item.suggested_text!==null&&item.suggested_text!==undefined)card.append(el('pre','建议 '+item.suggested_text));if(item.unit_note)card.append(el('p','单位及语义 '+item.unit_note));if(item.format_literals?.length)card.append(el('p','精确格式例外 '+item.format_literals.join(' ')));const ctx=el('p','前文 '+item.context_before.join('　'));ctx.className='context';card.append(ctx,el('pre',item.current_text));if(item.audio){const a=el('audio');a.controls=true;a.preload='none';a.src='/'+item.audio;card.append(a)}const after=el('p','后文 '+item.context_after.join('　'));after.className='context';card.append(after);if(item.prior_confirmation)card.append(el('p','历史确认依据 '+item.prior_confirmation));const details=el('details');details.append(el('summary','识别证据'));Object.entries(item.evidence).forEach(([k,v])=>details.append(el('h3',k),el('pre',v)));card.append(details);const edit=el('textarea');edit.value=row.corrected_text;edit.setAttribute('aria-label','修改后的字幕 多条字幕之间留一个空行');edit.oninput=()=>{row.corrected_text=edit.value;save()};card.append(edit);['accept','edit','uncertain'].forEach((v,i)=>{const b=el('button',['保留当前文字','使用修改文字','拿不准'][i]);b.setAttribute('aria-pressed',String(row.decision===v));b.onclick=()=>{row.decision=v;row.action_source='individual';stats();save();card.querySelectorAll('button[aria-pressed]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))};card.append(b)});const clear=el('button','撤销选择');clear.onclick=()=>{row.decision=null;row.action_source=null;render();save()};card.append(clear);const note=el('textarea');note.value=row.note;note.placeholder='备注或疑问';note.setAttribute('aria-label','备注');note.oninput=()=>{row.note=note.value;save()};card.append(note);$('list').append(card)})}
 $('filter').onchange=render;$('save').onclick=save;$('bulk').onclick=()=>{if(!confirm('这会确认全部未选择项目采用当前文字 请确认确实已核对'))return;state.items.forEach(x=>{if(x.decision===null){x.decision='accept';x.action_source='explicit_bulk'}});render();save()};
 fetch('/api/state').then(r=>r.json()).then(d=>{manifest=d.manifest;state=d.state;render()}).catch(e=>$('status').textContent='读取失败 '+e.message);
 </script></html>'''
@@ -503,6 +618,9 @@ def main():
     build.add_argument('--max-chars', type=int)
     build.add_argument('--max-lines', type=int)
     build.add_argument('--max-screen-chars', type=int)
+    build.add_argument('--numeric-style', choices=['spoken', 'arabic'], default='spoken')
+    build.add_argument('--numeric-review', choices=['all', 'uncertain'], default='uncertain')
+    build.add_argument('--format-exceptions', type=Path)
     build.add_argument('--allow-punctuation', action='store_true')
     serve = sub.add_parser('serve')
     serve.add_argument('--workdir', type=Path, required=True)
@@ -522,6 +640,8 @@ def main():
         elif args.command == 'build':
             result = build_review(args.srt, load(args.items), args.workdir, audio=args.audio,
                                   media_duration=args.media_duration, profile=args.profile,
+                                  numeric_style=args.numeric_style, numeric_review=args.numeric_review,
+                                  format_exceptions=load(args.format_exceptions) if args.format_exceptions else None,
                                   context_seconds=args.context_seconds, protected_terms=args.protected_term,
                                   validation_overrides={**{k: getattr(args, k) for k in
                                   ('max_chars','max_lines','max_screen_chars') if getattr(args, k) is not None},

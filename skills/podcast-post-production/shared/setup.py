@@ -65,6 +65,17 @@ def external_services():
             'required_before_call': ['指定服务和模型', '上传素材范围', '官方计费方式及日期',
                                      '可计算的费用估计或明确未知', '对应用户授权'],
         },
+        'new_role_transcription': {
+            'provider':'Aliyun Bailian / DashScope', 'suggested_model':'qwen-audio-3.1-asr-flash-filetrans',
+            'entrypoint':'bl speech recognize', 'cli_path':shutil.which('bl'),
+            'cli_parameter_support':'NOT VERIFIED', 'account_permission':'NOT VERIFIED', 'region':'UNKNOWN',
+            'quota':'NOT VERIFIED', 'price':'UNKNOWN', 'estimated_cost':'UNKNOWN',
+            'network_required':True, 'audio_upload':True, 'billing':'可能计费、消耗账户额度或另购服务；调用前核验',
+            'native_api':'Only after an identified CLI capability gap and explicit user authorization',
+            'official_sources':['https://help.aliyun.com/zh/model-studio/speech-recognition'],
+            'source_checked_date':None, 'source_status':'未在安装检测中联网核验费用',
+        },
+        'multitrack_local':{'network_required':False,'model_api_fee':False,'cached_projection_is_actual_output_asr':False},
         'other_providers': '仅依实际支持流程和用户选择列入，不自动切换服务或调用。',
         'host': 'Codex/TRAE/Claude Code/Qwen Work/Doubao Work/WorkBuddy 的订阅或模型费用由宿主决定，UNKNOWN。',
         'ci': {'automatic': False, 'billing': 'GitHub Actions 费用取决于仓库、运行器与账户规则；本库公开且默认不运行，未核验账户。',
@@ -85,7 +96,9 @@ def capability_report(chosen, args, smoke_base=None):
                                     output_dir=args.work_dir)
         rows.append({'id': mode + ':' + feature,
                      'status': ('PASS' if smoke_base else 'READY') if probe['ok'] else probe['status'],
-                     'missing': probe['missing'], 'evidence': probe})
+                     'missing': probe['missing'], 'evidence': probe,
+                     'validation_scope': 'smoke' if smoke_base and probe['ok'] else 'resource_inspection',
+                     'full_automatic_status': 'NOT RUN', 'blocked_by': probe['missing']})
     return rows
 
 
@@ -115,11 +128,12 @@ def markdown(report):
              f"包树 SHA-256：`{report['identity']['tree_sha256']}`。", '',
              f"{channel_label} 测试版；分发：{report['distribution']}。包公开许可不等于项目发布授权或人工审核。", '',
              '最低要求：Python 3.10；需要媒体工具的功能使用 FFmpeg／FFprobe 8.1.1 或以上，并具备所需编码器、滤镜。', '',
-             '| 功能 | 当前状态 | 缺项／原因 |', '|---|---|---|']
+             '| 功能 | 当前状态 | 验证范围 | 缺项／原因 |', '|---|---|---|---|']
     for row in report['capabilities']:
         errors = [c.get('error', '') for c in row['evidence']['checks'] if c['status'] != 'PASS']
         reason = '; '.join(row['missing'] + errors + [row.get('validation_note', '')]).replace('|', '/').replace('\n', ' ')
-        lines.append(f"| {row['id']} | {LABELS.get(row['status'], row['status'])} | {reason or '见逐项测试证据'} |")
+        scope={'full_automatic':'所列案例自动验收','smoke':'小型合成冒烟','resource_inspection':'仅资源检测'}.get(row.get('validation_scope'),'尚未验证')
+        lines.append(f"| {row['id']} | {LABELS.get(row['status'], row['status'])} | {scope} | {reason or '见逐项测试证据'} |")
     lines += ['', '补齐方法：', '',
               '- NumPy：独立 Python 环境中安装 numpy>=1.24；Pillow：Pillow>=10.1；完整验证另需 PyYAML>=6。',
               '- FFmpeg／FFprobe：安装适合系统的配对构建，最低 8.1.1；Review 另需 subtitles、drawtext，版本高不代表滤镜完整。',
@@ -127,6 +141,7 @@ def markdown(report):
               '- 工作目录：包外可写目录；实际项目所需空间和素材仍须单独检查。', '',
               '外部 API 与费用：', '',
               '- 本地制作、有效缓存复用和包内合成测试不产生模型 API 调用；宿主订阅／模型费用另计。',
+              '- 同步多轨本地装配和角色缓存投影不依赖云端 ASR；新角色识别可按用户选择经百炼 CLI，另需 CLI 能力、账号、地域、网络与上传授权，费用未知。',
               '- 新转写使用 StepFun 时需网络、凭据及音频上传，可能计费或消耗套餐额度；具体价格、权限、额度均未验证。',
               '- 安装流程不试扣费、不访问 Keychain、不显示密钥、不调用模型；其他服务不会自动代替 StepFun。',
               '- Python 依赖补齐会访问软件包源；GitHub Actions 手动运行费用取决于仓库、执行器与账户配置。', '',
@@ -167,6 +182,8 @@ def full_tests(directory, args):
     fixtures = extract_fixtures(ROOT / 'tests/resources/frozen-sources.zip', directory / 'fixtures')
     stages = [
         ('interfaces', [sys.executable, '-B', ROOT / 'scripts/check_interfaces.py', '--frozen-sources', fixtures / 'sources', '--report-dir', directory / 'interfaces']),
+        ('new-interfaces',[sys.executable,'-B',ROOT/'scripts/check_new_interfaces.py','--report-dir',directory/'new-interfaces']),
+        ('compatibility-103', [sys.executable,'-B',ROOT/'scripts/run_compatibility.py','--report-dir',directory/'compatibility-103']),
         ('regression', [sys.executable, '-B', ROOT / 'scripts/run_tests.py', '--frozen-sources', fixtures / 'sources', '--report-dir', directory / 'regression']),
         ('package-protection', [sys.executable, '-B', '-m', 'unittest', 'discover', '-s', ROOT / 'tests/package_protection', '-v']),
         ('synthetic', [sys.executable, '-B', ROOT / 'tests/synthetic_integration.py', '--work-dir', directory / 'synthetic', '--review-ffmpeg', args.review_ffmpeg or args.ffmpeg]),
@@ -183,25 +200,58 @@ def full_tests(directory, args):
             selected_font = None
     if selected_font:
         for name, command in stages:
-            if name in ('synthetic', 'product-acceptance'):
+            if name in ('synthetic', 'product-acceptance', 'production-protection'):
                 command.extend(['--font', selected_font])
     results = []
-    synthetic_ok = False
     runtime = runtime_env(args)
     for name, command in stages:
-        if name == 'synthetic' and not selected_font:
-            results.append({'group': name, 'status': 'BLOCKED', 'reason': 'No usable CJK font; configure --font'})
-            continue
-        if name in ('product-acceptance', 'production-protection') and not synthetic_ok:
-            results.append({'group': name, 'status': 'NOT RUN', 'reason': 'Synthetic fixture creation failed'})
-            continue
         row = execute(command, name, directory, runtime)
         results.append(row)
-        if name == 'synthetic':
-            synthetic_ok = row['status'] == 'PASS'
+        paths = {'synthetic':'synthetic/integration-summary.json',
+                 'product-acceptance':'acceptance/results.json',
+                 'production-protection':'production-protection/protection-results-run02.json', 'regression':'regression/summary.json','compatibility-103':'compatibility-103/results.json','interfaces':'interfaces/results.json','new-interfaces':'new-interfaces/results.json'}
+        if name in paths and (directory/paths[name]).is_file():
+            data=json.loads((directory/paths[name]).read_text())
+            items=data if isinstance(data,list) else data.get('steps',data.get('items',data.get('suites',[])))
+            row['items']=items
+            statuses={x['status'] for x in items}
+            row['status']='FAIL' if 'FAIL' in statuses else 'BLOCKED' if 'BLOCKED' in statuses else 'NOT RUN' if 'NOT RUN' in statuses else row['status']
+            row['counts']={status:sum(x['status']==status for x in items) for status in statuses}
     write_json(directory / 'full-results.json', {'groups': results, 'host_routing': 'NOT RUN',
                'human_full_review': 'NOT RUN', 'release_ready': False})
     return results
+
+
+def apply_validation_scope(rows, groups):
+    for row in rows:
+        mode=row['id'].split(':',1)[0]
+        relevant=[];common=[]
+        for group in groups:
+            if group['group'] in ('alpha-setup','package-protection'):
+                common.append(group);continue
+            items=group.get('items',[])
+            if not items and group.get('status')=='FAIL':common.append(group)
+            if group['group'] in ('regression','compatibility-103'):
+                for suite in items:
+                    if suite.get('suite')==mode:
+                        if suite['status']!='PASS':common.append(suite)
+                        relevant += [x for x in suite.get('cases',[]) if x.get('feature')==row['id']]
+                    elif suite.get('suite')=='shared' and suite['status']=='FAIL':common.append(suite)
+            elif group['group'] in ('interfaces','new-interfaces'):
+                common += [x for x in items if x.get('case','').startswith(mode+'/') and x['status']!='PASS']
+            else:
+                relevant += [x for x in items if x.get('feature')==row['id']]
+                if group['group']=='subtitle-e2e' and row['id']=='video-conform:subtitles':common.append(group)
+        failures=[x for x in common+relevant if x['status']!='PASS']
+        complete=bool(relevant) and not failures
+        row['full_automatic_status']='PASS' if complete else 'FAIL' if any(x['status']=='FAIL' for x in failures) else 'BLOCKED' if any(x['status']=='BLOCKED' for x in failures) else 'NOT RUN'
+        row['full_status']=row['full_automatic_status']
+        row['full_validation_evidence']=[x.get('step',x.get('case',x.get('group'))) for x in relevant]
+        row['blocked_by']=[x.get('reason',x.get('case',x.get('group',x.get('suite')))) for x in failures]
+        row['validation_scope']='full_automatic' if complete else 'smoke' if row['status']=='PASS' else 'resource_inspection'
+        if failures and row['status']=='PASS':
+            row['quick_status']='PASS';row['status']='READY'
+            row['validation_note']='Smoke passed; relevant full checks incomplete or failed. See full_automatic_status and blocked_by.'
 
 
 def runtime_env(args):
@@ -360,11 +410,7 @@ def main(argv=None):
             report['capabilities'] = capability_report(chosen, args, work / 'quick-probes')
             if args.test == 'full':
                 report['tests'] += full_tests(testdir, args)
-                if any(x['status'] != 'PASS' for x in report['tests']):
-                    for row in report['capabilities']:
-                        if row['status'] == 'PASS':
-                            row['status'] = 'READY'
-                            row['validation_note'] = 'Full test suite did not fully pass; quick probe evidence retained'
+                apply_validation_scope(report['capabilities'],report['tests'])
     errors = any(x['status'] in ('FAIL', 'BLOCKED') for x in report['capabilities'])
     suite_errors = any(x['status'] != 'PASS' for x in report['tests'])
     protection_failure = any(x['status'] != 'PASS' and x['group'] in ('alpha-setup', 'package-protection', 'production-protection') for x in report['tests'])
@@ -396,13 +442,8 @@ def main(argv=None):
             postreport = work / 'post-install/installation-report.json'
             if postreport.exists():
                 report['capabilities'] = json.loads(postreport.read_text(encoding='utf-8'))['capabilities']
-                if args.test == 'full' and suite_errors:
-                    for row in report['capabilities']:
-                        if row['status'] == 'PASS':
-                            row['status'] = 'READY'
-                            row['quick_status'] = 'PASS'
-                            row['full_status'] = 'FAIL / NOT RUN; see test groups'
-                            row['validation_note'] = 'Quick PASS; full tests did not fully pass. Post-install quick results do not override full failures.'
+                if args.test == 'full':
+                    apply_validation_scope(report['capabilities'],report['tests'])
             if post['status'] != 'PASS':
                 report['installation_status'] = 'INSTALLED; post-install checks incomplete/failed'
     report['identity_end'] = verify(ROOT)

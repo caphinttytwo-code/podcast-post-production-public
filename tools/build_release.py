@@ -20,9 +20,9 @@ def main():
     p.add_argument('--manifest-only', action='store_true')
     args = p.parse_args()
     files = inventory(ROOT)
-    data = {'version': '0.2.0-rc.6.2-beta', 'channel': 'beta', 'distribution': 'public-beta',
+    data = {'version': '0.2.0-rc.6.3-beta', 'channel': 'beta', 'distribution': 'public-beta',
             'public_distribution_ready': True, 'public_distribution_blockers': [],
-            'display_version': '0.2-rc6.2beta', 'license': 'MIT', 'files': files,
+            'display_version': '0.2-rc6.3beta', 'license': 'MIT', 'files': files,
             'tree_sha256': tree_digest(files),
             'algorithm': 'sha256 UTF-8 sorted <sha256>  <POSIX relative path> LF; manifest itself excluded',
             'base_rc61_zip_sha256': 'df9231ea213816cc1f356f403eaf89a421c2569882dd9a5a1105cf946d5b3e8e'}
@@ -34,10 +34,10 @@ def main():
     if out == ROOT or ROOT in out.parents:
         raise ValueError('Build artifacts must be outside the Skill')
     out.mkdir(parents=True, exist_ok=False)
-    archive = out / 'podcast-post-production-v0.2.0-rc.6.2-beta.zip'
+    archive = out / 'podcast-post-production-v0.2.0-rc.6.3-beta.zip'
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as handle:
         for rel in sorted(list(files) + ['package-manifest.json']):
-            info = zipfile.ZipInfo('podcast-post-production/' + rel, date_time=(2026, 10, 14, 0, 0, 0))
+            info = zipfile.ZipInfo('podcast-post-production/' + rel, date_time=(2026, 10, 17, 0, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = 0o100644 << 16
             handle.writestr(info, (ROOT / rel).read_bytes())

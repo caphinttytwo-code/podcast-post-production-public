@@ -167,3 +167,9 @@ Semantic decisions must use that refreshed transcript. All final intervals remai
 - Never execute `review_candidates[]`.
 - Reject unknown, duplicate, or missing delivery formats and suffix/EDL mismatches.
 - Reject unsupported schema versions.
+
+## v1.6 sound profile and review drafts
+
+Optional `sound_processing` is `standard_mastering` (the legacy default) or `preserve_source_no_mastering`. The preserve profile requires a v3 approved EDL and keeps supported PCM WAV source format unchanged. Read [preserve source and QA](preserve-source-and-qa.md) before using it.
+
+Mark attached pause trimming with `trims_adjacent_pause: true` and `category: content-with-pause-trim`; supply the existing pause fields and ASR/waveform evidence. A renderer `--review-copy` may omit listening evidence only to generate an explicitly unlistened review draft. Pending content and manual treatments remain blocked. Normal pause execution still requires listening evidence. Never use a different category to bypass that distinction.

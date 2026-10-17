@@ -96,3 +96,14 @@ python3 scripts/validate_srt.py /absolute/project/work/draft.srt \
 `--max-chars`, `--max-lines` and `--max-screen-chars` override profile limits; `--allow-punctuation` explicitly overrides punctuation enforcement. Without `--profile`, existing validation defaults remain unchanged. Record any overrides as the chosen style. Review confirmed dialogue separately: syntactically valid hyphens do not prove actual overlapping speech.
 
 The delivery record separates structural/format QA, cache/model comparisons, text semantic review, individual human decisions and full-duration human listening. Keep original/version hashes, selected scope, word/phrase anchors, glossary, raw response locations, omissions, rewrites, saved decisions, pending items and output hashes in the work directory. Unselected items remain unconfirmed even when retained unchanged. Never infer full listening or release readiness from model agreement, a successful page save or passing validation.
+
+## Optional numeric, merge and lineage extensions
+
+The [contextual review tools](subtitle-review.md#numeric-notation-and-complete-numeric-review)
+now support explicit Arabic numeric notation and an all-numbers review scope,
+snapshot-bound exact symbol exceptions, and approved adjacent-cue merges. These
+are optional extensions; old subtitle and review defaults remain unchanged.
+Use the source-lineage auditor when substantial rewriting or zero-duration ASR
+records make content accounting necessary. It never certifies semantic fidelity.
+Keep project-specific visual design and fixed episode parameters in project
+records rather than in this general subtitle workflow.

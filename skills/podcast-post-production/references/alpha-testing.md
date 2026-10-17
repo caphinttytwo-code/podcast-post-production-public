@@ -15,4 +15,16 @@
 
 本轮固定来源兼容修复及适配差异在 `tests/resources/rc5-source-updates.zip`，其为离线数据，解压到包外查看；原回归冻结来源另见 `frozen-sources.zip`。本地开发验收范围见 [release-validation.md](release-validation.md)。
 
-本包为 **0.2.0-rc.6.2-beta 公开 Beta 测试版**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。
+本包为 **0.2.0-rc.6.3-beta 公开 Beta 测试版**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。
+
+## rc6.3 test inventory and status rules
+
+Run the packaged installer `test --test full` in a new external directory. It includes the original 103 compatibility cases (reruns, not new unique cases), migrated audio v1.7 cases (130, including earlier cases), subtitle source cases (35, including earlier cases), shared/setup/package checks, 29 legacy CLI comparisons, 21 production steps, 28 artifact checks, 18 production protections and subtitle end-to-end cases. Actual machine inventories and results determine totals; overlapping suites must not be added as unique tests.
+
+The three source-manifest tests are adapted to the single integrated entrypoint/UI while preserving link and source-release consistency checks. Offline archives preserve the exact original source tests for independent comparison; no source repository fetch is needed.
+
+Per-step resources and verified upstream outputs control execution. Missing version/filter/font/dependency is BLOCKED; an executed assertion/command failure is FAIL; unavailable upstream artifacts yield NOT RUN. These statuses never count as passes. Later independent subtitle, inventory, index-protection and retiming checks continue. Input start/end/final hashes are retained even on failure. Quick smoke, full automatic acceptance, host actual routing and human review are separate scopes.
+
+Also run the same full suite on minimum 8.1.1 and 9.0.2. Supply Review FFmpeg explicitly. Test lower-version, missing-filter, missing-font and missing-dependency branches and verify unaffected checks still execute. Windows symlink permission failure stays BLOCKED without elevation.
+
+New host routing cases: default solo, bound paragraph review, preserve PCM, equal synchronized multitrack, unequal/offset multitrack refusal, numeric review scope, partial subtitle decisions, exact format exceptions, selected adjacent merge and source-map missing evidence. Exercise actual host requests; reading instructions alone is NOT RUN for host routing.

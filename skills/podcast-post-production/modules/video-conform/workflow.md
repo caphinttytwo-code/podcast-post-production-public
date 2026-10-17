@@ -44,3 +44,9 @@ Maintain the repository copy; installed copies are validated runtime copies.
 - A user-accepted issue remains a documented exception with exact time range, symptom, date, version/hash, and later-version fix requirement; acceptance does not turn a failed check into a pass.
 - Cleanup requires a dry-run inventory and exact authorization; recheck protected inputs and outputs afterward. Never infer that an older reference may be deleted.
 - Find existing script roles in [resources](references/production-workflow.md#resources); resolve commands from the skill directory.
+
+## rc6.3 subtitle source adaptation
+
+The opt-in numeric style/review scope, exact punctuation exceptions, explicitly selected adjacent-cue merges, cue-number mapping and source/zero-duration audit come from pinned upstream PR #4 commit b84c5ed7660721a23bf9abb5f46dbc27984cc144 (OPEN, not merged).
+Read [subtitle workflow](references/subtitle-workflow.md) and [contextual review](references/subtitle-review.md) for these options. Defaults stay spoken style and uncertain-only review. Unselected/uncertain items remain pending or unchanged; never manufacture time boundaries.
+These rules apply only here. Do not alter trailer or locked-revision subtitle rules or restart conform/story editing for same-timebase subtitle continuation.

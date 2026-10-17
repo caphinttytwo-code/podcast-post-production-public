@@ -1,6 +1,6 @@
 # 一个包内完成检测、测试与安装
 
-版本 0.2.0-rc.6.2-beta，Beta。先核对 GitHub Release 展示的 ZIP SHA-256，再解压；setup 还会核验全部包文件，拒绝身份变化、链接及夹带的可执行字节码。包内清单用于完整性校验，可信 ZIP 哈希来自指定 Release，不能用被修改包自己提供的清单证明来源真实性。
+版本 0.2.0-rc.6.3-beta，Beta。先核对 GitHub Release 展示的 ZIP SHA-256，再解压；setup 还会核验全部包文件，拒绝身份变化、链接及夹带的可执行字节码。包内清单用于完整性校验，可信 ZIP 哈希来自指定 Release，不能用被修改包自己提供的清单证明来源真实性。
 
 ## 安装前
 
@@ -41,4 +41,4 @@ python3 -B scripts/setup_skill.py install --work-dir /ABS/NEW/setup --dest /ABS/
 
 所有报告、夹具、venv、缓存和项目媒体必须在包外。返回 report.md、JSON、日志和证据哈希；人工审听／审看仍单独记录。失败后保留本轮证据，在新目录重试。
 
-本包为 **0.2.0-rc.6.2-beta 公开 Beta 测试版**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。
+本包为 **0.2.0-rc.6.3-beta 公开 Beta 测试版**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。

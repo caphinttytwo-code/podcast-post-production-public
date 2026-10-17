@@ -8,4 +8,7 @@
 
 安装只在用户选定宿主、目标和安装范围后执行。安装后展示包生成的能力报告。最终交付报告、JSON、日志、图片／媒体验收证据、哈希清单及证据 ZIP；技术通过、宿主路由、人工完整审听／审看分开。报告需写实际宿主和模型，不根据名称猜测。真实 API 权限／额度／费用仍未通过合成测试验证。
 
-本包为 **0.2.0-rc.6.2-beta 公开 Beta 测试版**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。
+本包为 **0.2.0-rc.6.3-beta 公开 Beta 测试版**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。
+
+
+rc6.3 additions: use only the package's current entries and original 103 compatibility runner. Verify source v1.7.0 and fixed pending subtitle PR provenance. Run new audio capability probes independently. Do not convert multitrack to solo EDL or use cached projections as output ASR. Test environment-blocked branches and report per-case PASS/FAIL/BLOCKED/NOT RUN with source hashes even after failure; do not stop unrelated tests when Review fails. No real model or paid API calls. Keep actual host routing, platform coverage and human listening as NOT RUN unless performed.

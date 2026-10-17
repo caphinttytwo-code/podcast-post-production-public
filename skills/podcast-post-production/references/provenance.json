@@ -1,5 +1,5 @@
 {
-  "candidate_version": "0.2.0-rc.6.2-beta",
+  "candidate_version": "0.2.0-rc.6.3-beta",
   "modules": [
     {
       "mode": "audio-edit",
@@ -171,5 +171,72 @@
   },
   "rc6_updates": "rc6-source-updates.json",
   "rc6_revision_reason": "Frozen initial rc6 retained; report templates corrected from legacy rc4 and new template identity test added",
-  "base_candidate_version": "0.1.0-rc.6.1"
+  "base_candidate_version": "0.1.0-rc.6.1",
+  "rc63_updates": [
+    {
+      "mode": "audio-edit",
+      "source_version": "1.7.0",
+      "commit": "46eefcdfa5cc7c4af68da87990850a23593ecf93",
+      "status": "merged, released",
+      "replaces": "audio module source baseline including prior v1.6 abilities",
+      "source_files": {
+        ".gitignore": "6f1fe172df6d8a75c57a95e7b1afdfb48a1a0bb52181887ac337b628e74527ba",
+        "SKILL.md": "8cd410b1248e68e1da4d460ca2031fabe0ac1ab584c24da76c8342970193506c",
+        "references/reference-edit-learning.md": "7e64c7a1e01f1c5e21a73bd1e518c5dd951d84bedc3fe6942acd8782b6fe7a87",
+        "references/casual-non-rigorous.md": "f4232ff7fe2150cef32128529ad52d6fe5b2747b2dc7d3506e75ce90c79e417c",
+        "references/synchronized-multitrack.md": "cff724e436e6b446c1a0b2c841c07fac0a38ed812698a6ace75410c6031f5bb1",
+        "references/rigorous-explainer.md": "281a8e14568669d100d67edf6b75943429ba1ecb08434f59c2a563ec0e133861",
+        "references/version-history.md": "56d2e7a262f6fb99e9a48656bf6ea2742082ccf120d85cfd419e53fdf8e4308f",
+        "references/preserve-source-and-qa.md": "f87e3741b1c0389ae8d930b57c1a3e425070181a3ce763a66a89106c5c9ec288",
+        "references/editorial-decision-rules.md": "627cbf40bf2eecc52daa48ab697fd27160d856c541216bd2d15842f436998750",
+        "references/pause-shaping.md": "4038c4485d16d8bc65cb64791cc78d4253b0d069d56808219753185232f556e1",
+        "references/production-workflow.md": "307b28fc9191a98cb27752b81a05e09d0d21aa53595b64b9635762132d7a3e77",
+        "references/paragraph-review.md": "071b6f602bf3b346a42aa6fde06a9c6072618221c14d33c70acdf30243e5cf22",
+        "references/chatcut-reference-workflow.md": "de1d026d58727939f21302ac561fc90bd783529d5a07172faff8cfa5f30505b4",
+        "references/edl-schema.md": "4a6bf0d221f63a5e34a2d33453623001780bcbde34a139706c3b77683c0cc0ca",
+        "tests/test_ffmpeg_filter_file.py": "76c1e931fbb8760e16c7e2deda02040f7bde5ddb802d548a1b1e99c924537221",
+        "tests/test_skill_manifest.py": "6fbe8e7777e2ff267a97d504bed3f48dda5684f015b268c65c81a0363a79b934",
+        "tests/test_asr_timing_cache.py": "844d52c277daaf2bd3936e624fd76bf3609ddbd0945501cf87a188cff0734c8c",
+        "tests/test_reference_edit_learning.py": "1b1d1ec79a8f4afe20d3c22bfdb24dcd60cac013919cab0007417fd193c94e15",
+        "tests/test_chatcut_reference.py": "8842717eebbf613d7bab54ad5150e22627ff27d7f5c998c106f088bb375dc38a",
+        "tests/test_multitrack.py": "29a0848d41e4e26e2a65b8f5e83e5d036b86761a7ac6c3aaabf1463964910aeb",
+        "tests/test_asr_redirect_security.py": "d979781848a597c06cbc7d7426799cc97d2371a8f40ef3e85a30bb3adb30f90b",
+        "tests/test_paragraph_review.py": "c97d47133b0460edda529e44687a0a97e2c1ee36a080fa6afa949f2b260a7f52",
+        "tests/test_review_status.py": "30654075f2f8e3028994187c4563af03da711cadfe07165860db75327b3041fb",
+        "tests/test_v12_workflow.py": "04707d7436c5d58c16d5058804d5d57c213b51280b62fd1478a71697274e3c3e",
+        "tests/test_proxy_manifest.py": "5554bb9ffdd78e332a5abe68cb35599a189f1b7acec95c005d20914e3619b0c7",
+        "tests/test_preserve_mode.py": "71415d921fff796a509b0091c99deb5053c512616b9232a80c27bc9a5f79ee05",
+        "agents/openai.yaml": "c40a7b285dc9ad1f692ae07c86d61dcf6f664320634d28c4ee2d4419d7acf804",
+        "scripts/render_podcast_edl.py": "746f98f897174b232d6c540c7b1104ee7a87cc05ff5203e7dd5569e37d4398d4",
+        "scripts/build_stage_transcript.py": "dd1daf41061854194616217d8ff5ae3116da97b049c88c859f83d71c051b13ff",
+        "scripts/audio_qa.py": "aa2e77af313d30fec1d80414f76f8e1a34820d92e3bb2272212629eef5aea32d",
+        "scripts/analyze_pause_profile.py": "0103d1755bf60bafa8a92470fd76e6fec5936ebd781a37ad6e3a05f5e95e27a0",
+        "scripts/editorial_qa.py": "a06b1124376207c4cc2a16772828b387fe40fea4632085e620570205821c56f3",
+        "scripts/compare_reference_edit.py": "8f891cbcc4171f6928bd9b3f8fb9953a3a1e48d4727380b45d1f55af59d32bd1",
+        "scripts/compare_audio_reference.py": "c59e0a672511952406e972e6849594eeb9389f9e27801d6d270ecdf52b24288b",
+        "scripts/review.py": "85d2ee045381924679a412e5c44189149bb0eafb05f3bd4c2d21e6c790b8c816",
+        "scripts/transcribe_stepfun.py": "6b99d3d13a573da811c8ae216df993562f2a8e8a6fd97345b8c7ef139bb8cb84",
+        "scripts/preserve_pcm.py": "3bc1412cb3b52baae8e92d4c1e0c5d2000b522fcf1b754ece2e58e402a42bf7c",
+        "scripts/multitrack.py": "03dcb0ad2cdc0687896ec6ef55736a6e6b17074d62b09e2efe5e97257bbcadf2",
+        "scripts/prepare_asr_chunks.py": "3ad9978098a70c96d9a80f994ac3cc9d4af170009ab2dbee1b6c0ae13ecd9b2c",
+        "assets/paragraph-review.html": "7db3e13c07dc3b208adc3bd9c02f826dc6547bdb05a684b1cab57df2ef617335",
+        ".github/workflows/tests.yml": "ab8a847ed123bd6e1f6eebad9ab1a2fd85ec1ca5c4b7b817a75e3790b48b5531"
+      },
+      "adapters": "whole-package guards; shared StepFun network; unconditional review content hash; single entry/UI; public configurable budgets",
+      "distributed_snapshot_redactions": [
+        {
+          "source": "references/synchronized-multitrack.md",
+          "original_sha256": "cff724e436e6b446c1a0b2c841c07fac0a38ed812698a6ace75410c6031f5bb1",
+          "distributed_source_sha256": "daf7154aa2df9c99f45ec1076ab5ebe1e5b34bbf61d6d578e3c3e791a458ee13",
+          "reason": "Remove personal budget amount from public source-data export; functional code/tests unchanged. Original source tar/hash retained privately."
+        }
+      ]
+    },
+    {
+      "mode": "video-conform",
+      "commit": "b84c5ed7660721a23bf9abb5f46dbc27984cc144",
+      "status": "upstream PR #4 OPEN / not merged",
+      "scope": "subtitle enhancements only; conform renderer retains rc6.2 fixes"
+    }
+  ]
 }

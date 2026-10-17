@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Compare aggregate pause profiles without emitting transcript text or source identifiers."""
 
+
 from pathlib import Path as _PPPath
 import sys as _ppsys
 _ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
-from shared.files import protect_output_args
-
+from shared.files import protect_output_args, package_root
+from shared.guards import guard_path, guard_directory
 
 import argparse
 import json

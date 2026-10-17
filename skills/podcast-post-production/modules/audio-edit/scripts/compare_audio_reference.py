@@ -7,12 +7,11 @@ The result is non-executable and does not replace same-model post-edit ASR.
 
 from __future__ import annotations
 
-from pathlib import Path as _PackagePath
-import sys as _package_sys
-_PACKAGE_ROOT = _PackagePath(__file__).resolve().parents[3]
-if str(_PACKAGE_ROOT) not in _package_sys.path:
-    _package_sys.path.insert(0, str(_PACKAGE_ROOT))
-from shared.files import package_root
+from pathlib import Path as _PPPath
+import sys as _ppsys
+_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
+from shared.files import protect_output_args, package_root
+from shared.guards import guard_path, guard_directory
 
 
 import argparse
@@ -29,7 +28,7 @@ except ImportError:
     np = None
 
 
-SKILL_ROOT = package_root(Path(__file__))
+SKILL_ROOT = package_root()
 SAMPLE_RATE = 8000
 HOP = 400
 FPS = SAMPLE_RATE // HOP

@@ -1,6 +1,6 @@
 # Production workflow
 
-Read only the sections needed for the current task. Commands and backticked `scripts/`, `assets/`, and `references/` paths are relative to the selected module directory (the directory containing module `workflow.md`), not this reference file. Resolve that directory before running commands.
+Read only the sections needed for the current task. Commands and backticked `scripts/`, `assets/`, and `references/` paths are relative to the skill directory (the directory containing `SKILL.md`), not this reference file. Resolve that directory before running commands.
 
 ## Start Every Job
 
@@ -42,6 +42,8 @@ project/
 ## Workflow
 
 ### 1. Transcribe and inspect
+
+For exact source-sample proxy manifests, cache binding and legacy timing limits, read [preserve source and QA](preserve-source-and-qa.md#timing-and-caches). For a user confirmation page, read [paragraph review](paragraph-review.md) before generating candidates.
 
 - Extract 16 kHz mono MP3 proxy chunks of about five minutes while preserving the source.
 - Run `scripts/transcribe_stepfun.py CHUNKS OUTPUT --dry-run`, inspect order and offsets, then run without `--dry-run`.
@@ -98,6 +100,8 @@ python3 scripts/build_stage_transcript.py \
 - Attribute reference differences separately to content-bearing removal, independent pause compression, and unresolved residual. Never treat the total low-energy difference as pause compression.
 
 ### 6. Render the edit
+
+Select the approved sound profile first. Omission keeps the standard mastering settings below. For an explicit no-processing request, follow [preserve source and QA](preserve-source-and-qa.md); do not apply the standard gain, high-pass, mono conversion or loudness target. Missing actual listening permits only an identified review copy; never fabricate listening evidence or relabel a pause trim.
 
 - Run the matching dry-run and inspect duration, cut count, shortest keep segment, output formats, and filter settings:
 

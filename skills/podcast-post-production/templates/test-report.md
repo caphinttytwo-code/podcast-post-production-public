@@ -1,6 +1,6 @@
 # rc.6.2 Beta 私有独立封测报告
 
-固定版本：0.2.0-rc.6.2-beta；渠道：Beta；分发：private-alpha；public_distribution_ready=false。
+固定版本：0.2.0-rc.6.3-beta；渠道：Beta；分发：private-alpha；public_distribution_ready=false。
 
 执行器/版本：待填写；显示模型/实际请求模型及核实来源：待填写；操作系统/CPU：待填写。
 

@@ -59,6 +59,9 @@ def parse_srt(text: str) -> tuple[list[Cue], list[str]]:
     return shared_parse_srt(text, strict_components=True)
 
 
+from subtitle_policy import numeric_literals, mask_literals, validate_exceptions
+
+
 def validate_srt(
     text: str,
     *,
@@ -69,9 +72,12 @@ def validate_srt(
     profile: str | None = None,
     max_lines: int | None = None,
     max_screen_chars: int | None = None,
+    numeric_style: str = 'spoken',
+    format_exceptions: dict | None = None,
 ) -> dict:
     if profile not in (None, 'compact-clean'):
         raise ValueError('unknown subtitle profile')
+    numeric_literals("", numeric_style)
     compact_style = profile == 'compact-clean'
     max_chars = 16 if max_chars is None else max_chars
     max_lines = (2 if compact_style else None) if max_lines is None else max_lines
@@ -81,6 +87,7 @@ def validate_srt(
     if any(v is not None and v <= 0 for v in (max_chars, max_lines, max_screen_chars)):
         raise ValueError('subtitle length limits must be positive')
     cues, errors = parse_srt(text)
+    exceptions = validate_exceptions(text, cues, format_exceptions)
     previous_end = 0.0
     for expected, cue in enumerate(cues, start=1):
         if cue.number != expected:
@@ -108,9 +115,11 @@ def validate_srt(
                 errors.append(
                     f"cue {cue.number} line {line_number}: {len(compact)} chars exceeds {max_chars}"
                 )
+            checked_line = mask_literals(line, exceptions.get(cue.number, []))
+            checked_line = mask_literals(checked_line, [t for t in numeric_literals(checked_line, numeric_style) if any(c in t for c in '.．%％‰')])
             residue = any(
                 unicodedata.category(ch)[0] in ('P', 'S', 'C') and not (dual and j == 0 and ch == '-')
-                for j, ch in enumerate(line)
+                for j, ch in enumerate(checked_line)
             ) if compact_style else bool(HOUSE_PUNCTUATION_RE.search(line))
             if enforce_house_style and residue:
                 errors.append(f"cue {cue.number} line {line_number}: punctuation residue")
@@ -126,6 +135,7 @@ def validate_srt(
         "last_end_seconds": cues[-1].end if cues else None,
         "errors": errors,
         "profile": profile,
+        **({"numeric_style": numeric_style} if numeric_style != "spoken" else {}),
         "limits": {"max_chars": max_chars, "max_lines": max_lines, "max_screen_chars": max_screen_chars},
     }
 
@@ -153,6 +163,8 @@ def main() -> int:
     parser.add_argument("--max-lines", type=int)
     parser.add_argument("--max-screen-chars", type=int)
     parser.add_argument("--bad-term", action="append", default=[], help="WRONG=CORRECT")
+    parser.add_argument("--numeric-style", choices=["spoken", "arabic"], default="spoken")
+    parser.add_argument("--format-exceptions", type=Path)
     parser.add_argument("--allow-punctuation", action="store_true")
     parser.add_argument("--json-out", type=Path)
     args = parser.parse_args()
@@ -168,6 +180,8 @@ def main() -> int:
             profile=args.profile,
             max_lines=args.max_lines,
             max_screen_chars=args.max_screen_chars,
+            numeric_style=args.numeric_style,
+            format_exceptions=json.loads(args.format_exceptions.read_text()) if args.format_exceptions else None,
         )
     except (OSError, UnicodeError, ValueError, subprocess.CalledProcessError) as exc:
         report = {

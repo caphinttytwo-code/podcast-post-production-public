@@ -11,15 +11,8 @@ from __future__ import annotations
 from pathlib import Path as _PPPath
 import sys as _ppsys
 _ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
-from shared.files import protect_output_args
-
-
-from pathlib import Path as _PackagePath
-import sys as _package_sys
-_PACKAGE_ROOT = _PackagePath(__file__).resolve().parents[3]
-if str(_PACKAGE_ROOT) not in _package_sys.path:
-    _package_sys.path.insert(0, str(_PACKAGE_ROOT))
-from shared.files import package_root
+from shared.files import protect_output_args, package_root
+from shared.guards import guard_path, guard_directory
 
 
 import argparse
@@ -35,7 +28,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 
 
-SKILL_ROOT = package_root(Path(__file__))
+SKILL_ROOT = package_root()
 TOKEN_RE = re.compile(r"[\u3400-\u9fffA-Za-z0-9]")
 AUDIO_SAMPLE_RATE = 2000
 FRAME_SECONDS = 0.02

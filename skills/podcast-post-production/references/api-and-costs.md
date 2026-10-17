@@ -18,4 +18,8 @@
 
 真实调用前提示服务／模型、上传的素材及范围、计费方式与核对日期、已有缓存、可计算的费用估计；缺少单价／配额时明确写未知，不用 0 元代替。沿用有效授权或等待相应授权后执行。宿主工具的订阅、模型套餐和自身网络服务不由本包收费表代为保证。
 
-本包为 **0.2.0-rc.6.2-beta 公开 Beta 测试版**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。
+本包为 **0.2.0-rc.6.3-beta 公开 Beta 测试版**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。
+
+## Conditional role ASR for synchronized multitrack
+
+Local PCM assembly and valid cached-source role projections have no model API requirement. Projections are never actual-output ASR evidence. New speaker/role recognition can use user-selected Qwen FileTrans (`qwen-audio-3.1-asr-flash-filetrans`) through installed Bailian CLI `bl speech recognize`. It requires a compatible CLI parameter surface, account/model permission, region, network, media upload authorization and potentially usage fees/plan allowance or an additional service purchase. CLI presence is not entitlement. Official documentation: https://help.aliyun.com/zh/model-studio/speech-recognition . Price, quota, billing entitlement and current service availability: UNKNOWN, not verified by installation. Check live official terms and task-specific estimated cost before an authorized real request. No balance/budget/expiry snapshot is a public default. A native API capability gap must be explained and explicitly authorized; do not silently switch providers or routes. Installation and synthetic tests call no model and read no secret values.

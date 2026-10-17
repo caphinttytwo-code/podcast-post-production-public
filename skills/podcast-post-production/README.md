@@ -1,8 +1,8 @@
-# 播客音视频后期 — 0.2-rc6.2beta
+# 播客音视频后期 — 0.2-rc6.3beta
 
-**公开 Beta 测试版；包内版本 0.2.0-rc.6.2-beta，MIT 许可，非稳定版。**
+**公开 Beta 候选；包内版本 0.2.0-rc.6.3-beta，MIT 许可，非稳定版。当前未合并、未发布该版本 Release。**
 
-唯一获取入口：[指定 Beta Release](https://github.com/caphinttytwo-code/podcast-post-production-public/releases/tag/v0.2.0-rc.6.2-beta)。下载完整 ZIP，核对可信发布页 SHA-256，再解压。包包含五模块、安装与环境检查、API/费用提示、快速/完整测试、全部离线夹具与报告模板。
+候选审阅与下载入口：[公开 PR #1](https://github.com/caphinttytwo-code/podcast-post-production-public/pull/1)，完整 ZIP 和 SHA-256 在 PR 分支的 candidates 目录。下载后核对候选清单，再解压。包包含五模块、安装与环境检查、API/费用提示、快速/完整测试、全部离线夹具与报告模板。
 
 先读取 SKILL.md 与 references/alpha-installation.md，再用 `python3 -B scripts/setup_skill.py inspect --work-dir /ABS/NEW/preflight` 检查。展示能做什么、缺什么、外部条件和可能费用；选择快速（推荐）/完整/跳过以及是否补齐包外独立 Python 环境后，使用包内安装入口。目标必须是新增目录，不覆盖旧 Skills；安装后复测并展示 installation-report.md/JSON。
 

@@ -13,7 +13,7 @@ from .fonts import font_path, load_font, check_glyphs
 
 
 FEATURES = {
-    'audio-edit': ('full', 'basic'),
+    'audio-edit': ('full', 'basic', 'paragraph-review', 'preserve-source', 'synchronized-multitrack'),
     'video-conform': ('full', 'subtitles', 'review-clips'),
     'trailers': ('full', 'images', 'subtitles', 'review'),
     'locked-revision': ('full', 'subtitles'),
@@ -63,12 +63,18 @@ def profile(mode, feature):
     images = mode == 'trailers' and feature in ('full', 'images', 'subtitles')
     review = mode == 'trailers' and feature == 'review'
     pure = (mode == 'video-conform' and feature == 'subtitles') or (mode == 'locked-revision' and feature == 'subtitles') or (mode == 'project-audit' and feature == 'inventory')
+    if mode == 'audio-edit' and feature in ('preserve-source','synchronized-multitrack'):
+        packages['numpy'] = ('numpy',(1,24,0))
     if images or review:
         packages['Pillow'] = ('PIL', (10, 1, 0))
     if (mode == 'video-conform' and feature == 'full') or (mode == 'audio-edit' and feature == 'full'):
         packages['numpy'] = ('numpy', (1, 24, 0))
     if not pure and not (mode == 'trailers' and feature in ('images', 'subtitles')):
         tools = ['ffprobe'] if mode == 'project-audit' else ['ffmpeg', 'ffprobe']
+    if mode == 'audio-edit' and feature == 'paragraph-review':
+        tools = ['ffprobe']
+    if mode == 'audio-edit' and feature == 'preserve-source':
+        tools = []
     if 'ffmpeg' in tools:
         if mode == 'audio-edit':
             encoders = {'libmp3lame', 'pcm_s24le', 'flac'}
@@ -76,6 +82,9 @@ def profile(mode, feature):
         else:
             encoders = {'libx264', 'aac'}
             filters = {'scale', 'pad', 'fps', 'trim', 'setpts', 'atrim', 'asetpts', 'concat'}
+        if mode == 'audio-edit' and feature == 'synchronized-multitrack':
+            encoders = {'pcm_s24le'}
+            filters = set()
         if mode == 'video-conform' and feature == 'review-clips':
             encoders = {'libmp3lame'}
             filters = {'atrim', 'asetpts', 'aresample'}
@@ -143,7 +152,7 @@ def inspect(mode, require_review=False, *, feature='full', ffmpeg='ffmpeg',
             decoders = check('decoder inspection', lambda: names(selected, '-decoders'), True) or set()
             check('decoder:png', lambda: _present('png', decoders), True)
     font_info = None
-    if images or font or smoke_dir and review:
+    if images or review or font:
         def font_probe():
             path = font_path(font)
             loaded = load_font(path, 24)
@@ -215,6 +224,10 @@ def smoke(mode, feature, binaries, font_info, text, directory, review):
         image = Image.new('RGB', (640, 240), '#101010')
         ImageDraw.Draw(image).multiline_text((16, 16), text, font=load_font(font_info['path'], 24), fill='white', stroke_width=2)
         image.save(child_output(destination, 'text-preview.png'))
+    if mode == 'audio-edit' and feature in ('paragraph-review','preserve-source','synchronized-multitrack'):
+        from .production_probe import probe
+        production = probe(mode,feature,binaries,font_info,destination)
+        return {'steps':logs,'production':production,'scope':'dedicated feature smoke; no mastering or cloud ASR'}
     if 'ffmpeg' not in binaries:
         from .production_probe import probe
         production = probe(mode, feature, binaries, font_info, destination)

@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def probe(mode, feature, binaries, font, directory):
-    directory = Path(directory)
+    directory = Path(directory).resolve()
     logs = []
     env = {**os.environ, 'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONUTF8': '1'}
     parents = [str(Path(binaries[k]['path']).parent) for k in ('ffmpeg', 'ffprobe') if binaries.get(k)]
@@ -43,7 +43,43 @@ def probe(mode, feature, binaries, font, directory):
         return run(name, [binaries['ffmpeg']['path'], '-v', 'error', *args])
     protected = {}
 
-    if mode == 'audio-edit' or mode == 'video-conform' and feature == 'full':
+    if mode == 'audio-edit' and feature in ('paragraph-review','preserve-source','synchronized-multitrack'):
+        import importlib.util
+        scripts=ROOT/'modules/audio-edit/scripts'
+        def module(name):
+            sys.path.insert(0,str(scripts))
+            spec=importlib.util.spec_from_file_location('probe_'+name,scripts/(name+'.py'));value=importlib.util.module_from_spec(spec);spec.loader.exec_module(value);return value
+        if feature=='synchronized-multitrack':
+            import numpy as np
+            pcm=module('preserve_pcm');rng=np.random.default_rng(915);signals=[rng.normal(0,.07,24000) for _ in range(3)]
+            project={'version':1,'id':'synthetic','recording_mode':'synchronized-multitrack','tracks':[]}
+            for i,x in enumerate(signals+[sum(x*(i+1)/3 for i,x in enumerate(signals))]):
+                path=directory/(f't{i}.wav')
+                with wave.open(str(path),'wb') as f:f.setparams((1,3,8000,0,'NONE','not compressed'));f.writeframes(pcm.encode(x[:,None]*8388608,3))
+                item={'id':f't{i}','path':path.name,'sha256':sha256(path)};protected[str(path)]=sha256(path)
+                if i<3:project['tracks'].append(item)
+                else:project['reference_mix']=item
+            proj=save('project.json',project)
+            plan=save('plan.json',{'version':1,'id':'v01','project_sha256':sha256(proj),'edits':[{'id':'cut','type':'delete','start_frame':4000,'end_frame':6000}], 'user_decisions':{'authority':'user','recorded_at':'synthetic-test-only','items':{'cut':{'choice':'delete'}}}})
+            run('multitrack-inspect',script(mode,'multitrack.py','inspect',proj))
+            run('multitrack-compile',script(mode,'multitrack.py','compile',proj,plan,directory/'compiled.json'))
+            run('multitrack-render',script(mode,'multitrack.py','render',proj,plan,directory/'delivery'))
+            run('multitrack-verify',script(mode,'multitrack.py','verify',proj,plan,directory/'delivery'))
+        else:
+            source=directory/'source.wav'
+            with wave.open(str(source),'wb') as f:f.setparams((1,2,8000,0,'NONE','not compressed'));f.writeframes(b''.join(struct.pack('<h',int(5000*math.sin(i*.17))) for i in range(24000)))
+            protected[str(source)]=sha256(source)
+            if feature=='paragraph-review':
+                spec=save('review-spec.json',{'version':'synthetic','source_audio':str(source),'items':[{'id':'a','start_ms':0,'end_ms':1000,'text':'合成试听','suggestion':'uncertain'}]})
+                run('paragraph-review-build',script(mode,'review.py','build',spec,directory/'review'))
+                value=json.loads((directory/'review/state.json').read_text());assert value['revision']==0 and value['items']['a']['decision']=='pending'
+            else:
+                pcm=module('preserve_pcm');report=pcm.assemble(source,directory/'preserved.wav',{'cuts':[{'start':1,'end':2}],'crossfade_seconds':.02})
+                assert all(pcm.verify(source,directory/'preserved.wav',report).values())
+                save('preserve-verification.json',report);logs.append({'step':'preserve-api-render-and-sample-verify','exit_code':0})
+        if any(sha256(path)!=old for path,old in protected.items()):raise RuntimeError('Protected synthetic input changed')
+        return {'steps':logs,'protected_sha256_before':protected,'protected_sha256_after':{p:sha256(p) for p in protected},'human_full_review':'NOT RUN','cloud_calls':0}
+    elif mode == 'audio-edit' or mode == 'video-conform' and feature == 'full':
         rate = 48000
         samples = [int(11000 * math.sin(2 * math.pi * (330 + 17 * (i // rate)) * i / rate)) for i in range(4 * rate)]
         raw = b''.join(struct.pack('<h', x) for x in samples)

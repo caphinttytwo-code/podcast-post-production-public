@@ -55,7 +55,8 @@ def protect_output_args(args):
     for name in output_names:
         value = getattr(args, name, None)
         if value is not None:
-            outside_package(value)
+            from .guards import guard_path
+            guard_path(value, *inputs)
             distinct_output(value, *inputs)
             for other in output_names:
                 other_value = getattr(args, other, None)

@@ -36,9 +36,16 @@ def main():
             options.append(set(re.findall(r'--[a-zA-Z][\w-]*', result.stdout)))
             codes.append(result.returncode)
             logs.append({'command': command, 'exit_code': result.returncode, 'log': name})
-        additions = {'--profile', '--max-lines', '--max-screen-chars'} if row['mode'] == 'video-conform' and row['script'] == 'scripts/validate_srt.py' else set()
+        approved = {
+            ('video-conform','scripts/validate_srt.py'): {'--profile','--max-lines','--max-screen-chars','--numeric-style','--format-exceptions'},
+            ('audio-edit','scripts/render_podcast_edl.py'): {'--review-copy'},
+            ('audio-edit','scripts/audio_qa.py'): {'--profile','--assembly-map','--source','--edl'},
+            ('audio-edit','scripts/editorial_qa.py'): {'--review-records'},
+            ('audio-edit','scripts/transcribe_stepfun.py'): {'--manifest','--adopt-legacy-cache','--transcript-role'},
+        }
+        additions = approved.get((row['mode'],row['script']),set())
         ok = codes == [0, 0] and options[0] == set(row['expected_old_options']) and options[1] == options[0] | additions
-        results.append({'case': row['mode'] + '/' + row['script'], 'status': 'PASS' if ok else 'FAIL', 'runs': logs})
+        results.append({'case': row['mode'] + '/' + row['script'], 'status': 'PASS' if ok else 'BLOCKED' if any('ModuleNotFoundError' in (out/item['log']).read_text() for item in logs) else 'FAIL', 'runs': logs})
     report = {'items': results, 'ok': all(x['status'] == 'PASS' for x in results)}
     (out / 'results.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({'interfaces': len(results), 'ok': report['ok']}))

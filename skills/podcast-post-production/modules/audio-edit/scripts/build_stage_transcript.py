@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Build a mechanical-stage transcript without another ASR call."""
 
+
 from pathlib import Path as _PPPath
 import sys as _ppsys
 _ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
-from shared.files import protect_output_args, outside_package, distinct_output
-
+from shared.files import protect_output_args, package_root
+from shared.guards import guard_path, guard_directory
 
 import argparse
 import json
@@ -223,8 +224,7 @@ def main():
     cues = grouped_cues(retained, args.max_chars, args.gap_ms)
     paths = output_paths(args.output_prefix)
     for destination in paths.values():
-        outside_package(destination)
-        distinct_output(destination, args.source_transcript, args.edl)
+        guard_path(destination, args.source_transcript, args.edl)
     for path in paths.values():
         path.parent.mkdir(parents=True, exist_ok=True)
 

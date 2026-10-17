@@ -1,6 +1,6 @@
 # 最小安装环境与执行前检查
 
-当前候选：0.2.0-rc.6.2-beta。最低声明、工具能力与通过验证的版本组合是不同信息；安装成功不能代替渲染和媒体 QA。
+当前候选：0.2.0-rc.6.3-beta。最低声明、工具能力与通过验证的版本组合是不同信息；安装成功不能代替渲染和媒体 QA。
 
 ## 最小资源
 
@@ -89,3 +89,13 @@ FFmpeg/FFprobe 使用与操作系统和 CPU 匹配的配对构建，可放项目
 ## Beta 包内安装与自测
 
 安装前能力表、API／费用与限制、快速／完整／跳过选择和安装后报告由 [包内入口](alpha-installation.md) 提供。测试所需冻结资料已经随包提供，无需下载旧私有仓库。满足最低版本只是前提；合成探测实际调用音频与完整对版制作脚本。费用和服务条件见 [API 说明](api-and-costs.md)。
+
+## rc6.3 audio capability separation
+
+| Capability | Minimum resources | Verification and limits |
+|---|---|---|
+| audio-edit:paragraph-review | Python >=3.10; FFprobe >=8.1.1 for duration | Build pending, bound local paragraph review; real listening remains separate |
+| audio-edit:preserve-source | Python >=3.10, NumPy >=1.24; compatible integer PCM WAV | Preserve mono/stereo 16/24/32-bit format and verify body/fade samples; no mastering |
+| audio-edit:synchronized-multitrack | Python >=3.10, NumPy >=1.24; FFmpeg/FFprobe >=8.1.1, pcm_s24le for compressed preparation | Equal decoded frames/rate and reliable sync evidence; stop on offset/drift/insufficient evidence |
+
+Local multitrack assembly and cached role-transcript projection use no cloud ASR. A projection is not actual output ASR. New recognition may need the user-selected service/CLI, account, region, network, upload and fee authorization. Package detection never calls a model, uploads audio or queries private billing. No personal balance, budget, price or expiry snapshot is a public default.

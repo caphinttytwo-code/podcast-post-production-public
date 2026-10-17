@@ -1,6 +1,6 @@
 # Rigorous Explainer Branch
 
-- Skill release: `v1.5.1`.
+- Skill release: `v1.6.0`.
 - Branch ID: `rigorous-explainer`.
 - Status: active; ChatCut/agent-reference and complete-memory gates added in `v1.4.0`; StepFun API base standardized in `v1.4.1`; guarded human-calibrated personal defaults added in `v1.5.0`; rendered-reference comparison reliability hardened in `v1.5.1` without changing editorial thresholds.
 

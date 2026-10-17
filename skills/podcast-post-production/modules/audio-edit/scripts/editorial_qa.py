@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Combine editorial checks, review state, technical QA, and human approval."""
 
+
 from pathlib import Path as _PPPath
 import sys as _ppsys
 _ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
-from shared.files import protect_output_args
-
+from shared.files import protect_output_args, package_root
+from shared.guards import guard_path, guard_directory
 
 import argparse
 import json
@@ -30,6 +31,8 @@ def transcript_has_content(path):
             return bool(path.read_text(encoding="utf-8").strip())
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError):
+        return False
+    if data.get("stage") or "projection" in str(data.get("schema", "")).lower():
         return False
     if isinstance(data.get("events"), list):
         return bool(data["events"])
@@ -87,6 +90,7 @@ def main():
     parser.add_argument("--pacing-pass", action="store_true")
     parser.add_argument("--persona-pass", action="store_true")
     parser.add_argument("--reference-comparison", type=Path)
+    parser.add_argument("--review-records", type=Path, help="Structured per-check status and actual-listening attestations")
     parser.add_argument("--editorial-reviewer", required=True)
     parser.add_argument("--editorial-reviewed-at", required=True)
     parser.add_argument("--json-out", type=Path)
@@ -130,6 +134,30 @@ def main():
         "no_pending_review_candidates": pending == 0,
         "reference_comparison_resolved": reference_state["resolved"],
     }
+    statuses = {k: ("passed" if v else "not_run") for k,v in checks.items()}
+    for key in ("post_edit_transcript_present", "no_pending_review_candidates", "reference_comparison_resolved"):
+        statuses[key] = "passed" if checks[key] else "failed"
+    if audio.get("profile") == "preserve-source" and not args.review_records:
+        statuses["join_listen"] = "not_run"
+        checks["join_listen"] = False
+    if args.review_records:
+        records = read_json(args.review_records, "review records")
+        allowed = {"passed", "failed", "not_run", "blocked", "not_applicable"}
+        for key in ("sentence_integrity", "logic_integrity", "pacing_integrity", "persona_integrity", "join_listen"):
+            record = records.get(key, {"status": "not_run"})
+            if not isinstance(record, dict) or record.get("status") not in allowed:
+                raise ValueError(f"Invalid review status for {key}")
+            status = record["status"]
+            if status == "passed" and not all(record.get(k) for k in ("reviewer", "reviewed_at", "evidence")):
+                raise ValueError(f"Passed {key} requires reviewer, time and evidence")
+            if key in {"pacing_integrity", "persona_integrity", "join_listen"} and status == "passed" and record.get("method") != "actual_listening":
+                raise ValueError(f"{key} cannot be certified by ASR, waveform or browser playback")
+            statuses[key] = status
+            checks[key] = status == "passed"
+    if audio.get("profile") == "preserve-source":
+        actual = read_json(args.post_edit_transcript, "post-edit transcript")
+        checks["actual_output_asr_bound"] = actual.get("audio_role") == "post-edit" and bool(audio.get("output_sha256")) and actual.get("audio_sha256") == audio["output_sha256"] and not actual.get("timing_review_required", True)
+        statuses["actual_output_asr_bound"] = "passed" if checks["actual_output_asr_bound"] else "failed"
     editorial_passed = all(checks.values())
     technical_passed = audio.get("technical_passed") is True
     human_review = audio.get("human_full_length_listen", {})
@@ -145,6 +173,7 @@ def main():
         "edl_version": 3,
         "post_edit_transcript": str(args.post_edit_transcript),
         "checks": checks,
+        "check_statuses": statuses,
         "pending_review_candidates": pending,
         "reference_comparison": reference_state,
         "editorial_review": {

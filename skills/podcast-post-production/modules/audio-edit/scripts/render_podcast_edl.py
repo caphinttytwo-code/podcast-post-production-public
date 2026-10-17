@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Render a removal EDL and master a podcast to MP3, WAV, or both."""
 
+
 from pathlib import Path as _PPPath
 import sys as _ppsys
 _ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
-from shared.files import protect_output_args
-
+from shared.files import protect_output_args, package_root
+from shared.guards import guard_path, guard_directory
 
 import argparse
 import json
@@ -41,6 +42,18 @@ RISK_FLAGS = {"meaning", "logic", "reference", "emotion", "persona", "rhythm", "
 
 def run(command):
     return subprocess.run(command, check=True, capture_output=True, text=True)
+
+
+def filter_file_option(graph_path):
+    """Probe option parsing without rendering; old FFmpeg uses the script flag."""
+    probe = subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error',
+                            '-/filter_complex', str(graph_path), '-h', 'full'],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+    if probe.returncode == 0:
+        return '-/filter_complex'
+    if "Unrecognized option '/filter_complex'" in probe.stderr:
+        return '-filter_complex_script'
+    raise ValueError('FFmpeg filter-file capability check failed: '+probe.stderr[-1000:])
 
 
 def duration(path):
@@ -127,6 +140,7 @@ def master_filter(measured, config, correction=0.0):
 
 
 def encode_mp3(source, output, config, audio_filter=None):
+    guard_path(output,source)
     command = ["ffmpeg", "-hide_banner", "-nostats", "-y", "-i", str(source)]
     if audio_filter:
         command.extend(["-af", audio_filter])
@@ -141,6 +155,7 @@ def encode_mp3(source, output, config, audio_filter=None):
 
 
 def encode_wav(source, output, config, audio_filter):
+    guard_path(output,source)
     bit_depth = int(config["wav_bit_depth"])
     if bit_depth != 24:
         raise ValueError(f"Unsupported wav_bit_depth: {bit_depth}; expected 24")
@@ -188,7 +203,7 @@ def validate_deliveries(data, outputs):
     return normalized
 
 
-def validate_edl(data):
+def validate_edl(data, review_copy=False):
     version = data.get("version", 1)
     if isinstance(version, bool) or not isinstance(version, int):
         raise ValueError("EDL version must be an integer")
@@ -260,6 +275,8 @@ def validate_edl(data):
             ):
                 raise ValueError(f"Review candidate #{index} has invalid risk_flags")
     for index, cut in enumerate(data.get("cuts", []), 1):
+        if cut.get("trims_adjacent_pause") and cut.get("category") != "content-with-pause-trim":
+            raise ValueError("Adjacent pause trimming must use content-with-pause-trim")
         if cut.get("category") not in PAUSE_CATEGORIES:
             continue
         role = cut.get("pause_role")
@@ -278,7 +295,7 @@ def validate_edl(data):
             )
         evidence = cut.get("boundary_evidence")
         required_evidence = {"asr", "waveform"}
-        if version == 3:
+        if version == 3 and not review_copy:
             required_evidence.add("listening")
         if not isinstance(evidence, list) or not required_evidence.issubset(evidence):
             raise ValueError(
@@ -295,17 +312,36 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("--also-output", type=Path)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--review-copy", action="store_true", help="Render approved cuts as an explicitly unlistened review draft")
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
     protect_output_args(args)
 
     data = json.loads(args.edl.read_text(encoding="utf-8"))
+    if data.get('recording_mode', 'solo') != 'solo':
+        raise SystemExit('Use multitrack.py for synchronized-multitrack projects; this command handles solo EDLs')
     outputs = [args.output] + ([args.also_output] if args.also_output else [])
     try:
-        edl_version = validate_edl(data)
+        edl_version = validate_edl(data, review_copy=args.review_copy)
         delivery_formats = validate_deliveries(data, outputs)
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
+    if any(p.resolve() == args.source.resolve() for p in outputs):
+        raise SystemExit("Never overwrite source")
+    profile = data.get("sound_processing", "standard_mastering")
+    if profile not in {"standard_mastering", "preserve_source_no_mastering"}:
+        raise SystemExit("Unknown sound_processing profile")
+    if profile == "preserve_source_no_mastering":
+        if edl_version != 3:
+            raise SystemExit("Preserve mode requires an approved v3 EDL")
+        if delivery_formats != ["wav"] or len(outputs) != 1:
+            raise SystemExit("Preserve mode requires one integer PCM WAV output")
+        if any(t.get("status") != "applied" for t in data.get("manual_treatments", [])):
+            raise SystemExit("Unresolved manual treatments")
+        from preserve_pcm import assemble
+        report = assemble(args.source, args.output, data, dry_run=args.dry_run)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 0
     existing = [path for path in outputs if path.exists()]
     if existing and not args.force and not args.dry_run:
         joined = ", ".join(str(path) for path in existing)
@@ -333,6 +369,9 @@ def main():
     expected = source_duration - removed - max(0, len(keep) - 1) * fade
     audit = {
         "edl_version": edl_version,
+        "delivery_state": "review",
+        "auditory_review": "not_run",
+        "release_ready": False,
         "source_duration": source_duration,
         "cuts": len(cuts),
         "keep_segments": len(keep),
@@ -364,7 +403,7 @@ def main():
         run(
             [
                 "ffmpeg", "-hide_banner", "-nostats", "-y", "-i", str(args.source),
-                "-/filter_complex", str(graph_path), "-map", "[outa]",
+                filter_file_option(graph_path), str(graph_path), "-map", "[outa]",
                 "-ar", str(int(config["sample_rate"])), "-ac", str(int(config["channels"])),
                 "-c:a", "flac", str(assembly),
             ]

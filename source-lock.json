@@ -13,7 +13,8 @@
       "adapter": "source-adaptations/audio-edit.patch",
       "runtime_path": "skills/podcast-post-production/modules/audio-edit/scripts/render_podcast_edl.py",
       "runtime_sha256": "da79afdb344d2081e2066bfdbcbe216cf65159ef4d8ecde2762326cbf5d4c371",
-      "scope": "renderer-only compatibility update; all other module resources retain frozen rc4 provenance"
+      "scope": "renderer-only compatibility update; all other module resources retain frozen rc4 provenance",
+      "superseded_by": "rc63_updates/audio-edit full v1.7.0"
     },
     {
       "mode": "video-conform",
@@ -66,5 +67,408 @@
   "rc6_base": {
     "version": "0.1.0-rc.5",
     "zip_sha256": "a143a2a17710ff57ba0502ef52b3de09395e364b0efa0ce61f74bad2e8f192e6"
-  }
+  },
+  "rc63_base": {
+    "version": "0.2.0-rc.6.2-beta",
+    "pr_head": "ddca8f73cc3d343731a1f620dc7fd7096c4fa61a",
+    "zip_sha256": "e368883f7123fa24c44de395def8335f331dd17dbb569f56cf08564e6adfb4ad"
+  },
+  "rc63_updates": [
+    {
+      "mode": "audio-edit",
+      "commit": "46eefcdfa5cc7c4af68da87990850a23593ecf93",
+      "source_status": "merged release v1.7.0",
+      "source_version": "1.7.0",
+      "adapter": "source-adaptations/audio-edit-rc63.patch",
+      "files": [
+        {
+          "source": "SKILL.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/workflow.md",
+          "source_sha256": "8cd410b1248e68e1da4d460ca2031fabe0ac1ab584c24da76c8342970193506c",
+          "runtime_sha256": "96802a128be524dbd05bf9b818b97c437c8b79c3b05ef0a5c526851e270725b9",
+          "adapted": true,
+          "distributed_source_sha256": "8cd410b1248e68e1da4d460ca2031fabe0ac1ab584c24da76c8342970193506c"
+        },
+        {
+          "source": "assets/paragraph-review.html",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/assets/paragraph-review.html",
+          "source_sha256": "7db3e13c07dc3b208adc3bd9c02f826dc6547bdb05a684b1cab57df2ef617335",
+          "runtime_sha256": "7db3e13c07dc3b208adc3bd9c02f826dc6547bdb05a684b1cab57df2ef617335",
+          "adapted": false,
+          "distributed_source_sha256": "7db3e13c07dc3b208adc3bd9c02f826dc6547bdb05a684b1cab57df2ef617335"
+        },
+        {
+          "source": "references/casual-non-rigorous.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/casual-non-rigorous.md",
+          "source_sha256": "f4232ff7fe2150cef32128529ad52d6fe5b2747b2dc7d3506e75ce90c79e417c",
+          "runtime_sha256": "f4232ff7fe2150cef32128529ad52d6fe5b2747b2dc7d3506e75ce90c79e417c",
+          "adapted": false,
+          "distributed_source_sha256": "f4232ff7fe2150cef32128529ad52d6fe5b2747b2dc7d3506e75ce90c79e417c"
+        },
+        {
+          "source": "references/chatcut-reference-workflow.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/chatcut-reference-workflow.md",
+          "source_sha256": "de1d026d58727939f21302ac561fc90bd783529d5a07172faff8cfa5f30505b4",
+          "runtime_sha256": "de1d026d58727939f21302ac561fc90bd783529d5a07172faff8cfa5f30505b4",
+          "adapted": false,
+          "distributed_source_sha256": "de1d026d58727939f21302ac561fc90bd783529d5a07172faff8cfa5f30505b4"
+        },
+        {
+          "source": "references/editorial-decision-rules.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/editorial-decision-rules.md",
+          "source_sha256": "627cbf40bf2eecc52daa48ab697fd27160d856c541216bd2d15842f436998750",
+          "runtime_sha256": "627cbf40bf2eecc52daa48ab697fd27160d856c541216bd2d15842f436998750",
+          "adapted": false,
+          "distributed_source_sha256": "627cbf40bf2eecc52daa48ab697fd27160d856c541216bd2d15842f436998750"
+        },
+        {
+          "source": "references/edl-schema.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/edl-schema.md",
+          "source_sha256": "4a6bf0d221f63a5e34a2d33453623001780bcbde34a139706c3b77683c0cc0ca",
+          "runtime_sha256": "4a6bf0d221f63a5e34a2d33453623001780bcbde34a139706c3b77683c0cc0ca",
+          "adapted": false,
+          "distributed_source_sha256": "4a6bf0d221f63a5e34a2d33453623001780bcbde34a139706c3b77683c0cc0ca"
+        },
+        {
+          "source": "references/paragraph-review.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/paragraph-review.md",
+          "source_sha256": "071b6f602bf3b346a42aa6fde06a9c6072618221c14d33c70acdf30243e5cf22",
+          "runtime_sha256": "071b6f602bf3b346a42aa6fde06a9c6072618221c14d33c70acdf30243e5cf22",
+          "adapted": false,
+          "distributed_source_sha256": "071b6f602bf3b346a42aa6fde06a9c6072618221c14d33c70acdf30243e5cf22"
+        },
+        {
+          "source": "references/pause-shaping.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/pause-shaping.md",
+          "source_sha256": "4038c4485d16d8bc65cb64791cc78d4253b0d069d56808219753185232f556e1",
+          "runtime_sha256": "4038c4485d16d8bc65cb64791cc78d4253b0d069d56808219753185232f556e1",
+          "adapted": false,
+          "distributed_source_sha256": "4038c4485d16d8bc65cb64791cc78d4253b0d069d56808219753185232f556e1"
+        },
+        {
+          "source": "references/preserve-source-and-qa.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/preserve-source-and-qa.md",
+          "source_sha256": "f87e3741b1c0389ae8d930b57c1a3e425070181a3ce763a66a89106c5c9ec288",
+          "runtime_sha256": "f87e3741b1c0389ae8d930b57c1a3e425070181a3ce763a66a89106c5c9ec288",
+          "adapted": false,
+          "distributed_source_sha256": "f87e3741b1c0389ae8d930b57c1a3e425070181a3ce763a66a89106c5c9ec288"
+        },
+        {
+          "source": "references/production-workflow.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/production-workflow.md",
+          "source_sha256": "307b28fc9191a98cb27752b81a05e09d0d21aa53595b64b9635762132d7a3e77",
+          "runtime_sha256": "307b28fc9191a98cb27752b81a05e09d0d21aa53595b64b9635762132d7a3e77",
+          "adapted": false,
+          "distributed_source_sha256": "307b28fc9191a98cb27752b81a05e09d0d21aa53595b64b9635762132d7a3e77"
+        },
+        {
+          "source": "references/reference-edit-learning.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/reference-edit-learning.md",
+          "source_sha256": "7e64c7a1e01f1c5e21a73bd1e518c5dd951d84bedc3fe6942acd8782b6fe7a87",
+          "runtime_sha256": "7e64c7a1e01f1c5e21a73bd1e518c5dd951d84bedc3fe6942acd8782b6fe7a87",
+          "adapted": false,
+          "distributed_source_sha256": "7e64c7a1e01f1c5e21a73bd1e518c5dd951d84bedc3fe6942acd8782b6fe7a87"
+        },
+        {
+          "source": "references/rigorous-explainer.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/rigorous-explainer.md",
+          "source_sha256": "281a8e14568669d100d67edf6b75943429ba1ecb08434f59c2a563ec0e133861",
+          "runtime_sha256": "281a8e14568669d100d67edf6b75943429ba1ecb08434f59c2a563ec0e133861",
+          "adapted": false,
+          "distributed_source_sha256": "281a8e14568669d100d67edf6b75943429ba1ecb08434f59c2a563ec0e133861"
+        },
+        {
+          "source": "references/synchronized-multitrack.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/synchronized-multitrack.md",
+          "source_sha256": "cff724e436e6b446c1a0b2c841c07fac0a38ed812698a6ace75410c6031f5bb1",
+          "runtime_sha256": "daf7154aa2df9c99f45ec1076ab5ebe1e5b34bbf61d6d578e3c3e791a458ee13",
+          "adapted": true,
+          "distributed_source_sha256": "daf7154aa2df9c99f45ec1076ab5ebe1e5b34bbf61d6d578e3c3e791a458ee13"
+        },
+        {
+          "source": "references/version-history.md",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/references/version-history.md",
+          "source_sha256": "56d2e7a262f6fb99e9a48656bf6ea2742082ccf120d85cfd419e53fdf8e4308f",
+          "runtime_sha256": "56d2e7a262f6fb99e9a48656bf6ea2742082ccf120d85cfd419e53fdf8e4308f",
+          "adapted": false,
+          "distributed_source_sha256": "56d2e7a262f6fb99e9a48656bf6ea2742082ccf120d85cfd419e53fdf8e4308f"
+        },
+        {
+          "source": "scripts/analyze_pause_profile.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/analyze_pause_profile.py",
+          "source_sha256": "0103d1755bf60bafa8a92470fd76e6fec5936ebd781a37ad6e3a05f5e95e27a0",
+          "runtime_sha256": "eb78cd05bec19c700806c77c1f3b3d93f116009b645056703b30b261a47723ba",
+          "adapted": true,
+          "distributed_source_sha256": "0103d1755bf60bafa8a92470fd76e6fec5936ebd781a37ad6e3a05f5e95e27a0"
+        },
+        {
+          "source": "scripts/audio_qa.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/audio_qa.py",
+          "source_sha256": "aa2e77af313d30fec1d80414f76f8e1a34820d92e3bb2272212629eef5aea32d",
+          "runtime_sha256": "efbebdc7787166a98e9fe51ff1146072a38a8701c729ba4d719ba2de3d00a1a5",
+          "adapted": true,
+          "distributed_source_sha256": "aa2e77af313d30fec1d80414f76f8e1a34820d92e3bb2272212629eef5aea32d"
+        },
+        {
+          "source": "scripts/build_stage_transcript.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/build_stage_transcript.py",
+          "source_sha256": "dd1daf41061854194616217d8ff5ae3116da97b049c88c859f83d71c051b13ff",
+          "runtime_sha256": "5d61b33b4e95bb774fdc30fc0ff9840b58e5e9b3b043c72155114166113edd8f",
+          "adapted": true,
+          "distributed_source_sha256": "dd1daf41061854194616217d8ff5ae3116da97b049c88c859f83d71c051b13ff"
+        },
+        {
+          "source": "scripts/compare_audio_reference.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/compare_audio_reference.py",
+          "source_sha256": "c59e0a672511952406e972e6849594eeb9389f9e27801d6d270ecdf52b24288b",
+          "runtime_sha256": "826fda37442965aa4e5eb22e2579957ef7bf5a46b541534b9373758deede4be8",
+          "adapted": true,
+          "distributed_source_sha256": "c59e0a672511952406e972e6849594eeb9389f9e27801d6d270ecdf52b24288b"
+        },
+        {
+          "source": "scripts/compare_reference_edit.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/compare_reference_edit.py",
+          "source_sha256": "8f891cbcc4171f6928bd9b3f8fb9953a3a1e48d4727380b45d1f55af59d32bd1",
+          "runtime_sha256": "7b6a5fa05fae45795dc8f0e807b0ee177d0f3fd72fa94edf63eb5838dec4ce7f",
+          "adapted": true,
+          "distributed_source_sha256": "8f891cbcc4171f6928bd9b3f8fb9953a3a1e48d4727380b45d1f55af59d32bd1"
+        },
+        {
+          "source": "scripts/editorial_qa.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/editorial_qa.py",
+          "source_sha256": "a06b1124376207c4cc2a16772828b387fe40fea4632085e620570205821c56f3",
+          "runtime_sha256": "48334d324f53a8e56e8de2b2388076ce6451e5b587ca1c7a3c7f34c1f4df55d2",
+          "adapted": true,
+          "distributed_source_sha256": "a06b1124376207c4cc2a16772828b387fe40fea4632085e620570205821c56f3"
+        },
+        {
+          "source": "scripts/multitrack.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/multitrack.py",
+          "source_sha256": "03dcb0ad2cdc0687896ec6ef55736a6e6b17074d62b09e2efe5e97257bbcadf2",
+          "runtime_sha256": "21c05cf040a3d14dc71c875e0aa7f68e424ca677649205e05e2cf253d8458c0e",
+          "adapted": true,
+          "distributed_source_sha256": "03dcb0ad2cdc0687896ec6ef55736a6e6b17074d62b09e2efe5e97257bbcadf2"
+        },
+        {
+          "source": "scripts/prepare_asr_chunks.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/prepare_asr_chunks.py",
+          "source_sha256": "3ad9978098a70c96d9a80f994ac3cc9d4af170009ab2dbee1b6c0ae13ecd9b2c",
+          "runtime_sha256": "4d702a62d5340d9e905afeb0b89630a3e682f562fcadd9c8be2f520ba17f7932",
+          "adapted": true,
+          "distributed_source_sha256": "3ad9978098a70c96d9a80f994ac3cc9d4af170009ab2dbee1b6c0ae13ecd9b2c"
+        },
+        {
+          "source": "scripts/preserve_pcm.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/preserve_pcm.py",
+          "source_sha256": "3bc1412cb3b52baae8e92d4c1e0c5d2000b522fcf1b754ece2e58e402a42bf7c",
+          "runtime_sha256": "ee0dd49fd9592bf8c77a621e430a06827624e58d970fca3269d64ab0aeb87b2a",
+          "adapted": true,
+          "distributed_source_sha256": "3bc1412cb3b52baae8e92d4c1e0c5d2000b522fcf1b754ece2e58e402a42bf7c"
+        },
+        {
+          "source": "scripts/render_podcast_edl.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/render_podcast_edl.py",
+          "source_sha256": "746f98f897174b232d6c540c7b1104ee7a87cc05ff5203e7dd5569e37d4398d4",
+          "runtime_sha256": "71a37a4041581da8417e4a4a983ae52d2c182345ae78e94b8807dfc164db5f0a",
+          "adapted": true,
+          "distributed_source_sha256": "746f98f897174b232d6c540c7b1104ee7a87cc05ff5203e7dd5569e37d4398d4"
+        },
+        {
+          "source": "scripts/review.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/review.py",
+          "source_sha256": "85d2ee045381924679a412e5c44189149bb0eafb05f3bd4c2d21e6c790b8c816",
+          "runtime_sha256": "08c5dc8aeb711887d014ce69ad932920deb6ee583a05ff688eb800fd9eada2fa",
+          "adapted": true,
+          "distributed_source_sha256": "85d2ee045381924679a412e5c44189149bb0eafb05f3bd4c2d21e6c790b8c816"
+        },
+        {
+          "source": "scripts/transcribe_stepfun.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/scripts/transcribe_stepfun.py",
+          "source_sha256": "6b99d3d13a573da811c8ae216df993562f2a8e8a6fd97345b8c7ef139bb8cb84",
+          "runtime_sha256": "ba338f0c1fb85acbe72aad3cbed1e57b667eb0e30666b23a101f416fcee56e9d",
+          "adapted": true,
+          "distributed_source_sha256": "6b99d3d13a573da811c8ae216df993562f2a8e8a6fd97345b8c7ef139bb8cb84"
+        },
+        {
+          "source": "tests/test_asr_redirect_security.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_asr_redirect_security.py",
+          "source_sha256": "d979781848a597c06cbc7d7426799cc97d2371a8f40ef3e85a30bb3adb30f90b",
+          "runtime_sha256": "d979781848a597c06cbc7d7426799cc97d2371a8f40ef3e85a30bb3adb30f90b",
+          "adapted": false,
+          "distributed_source_sha256": "d979781848a597c06cbc7d7426799cc97d2371a8f40ef3e85a30bb3adb30f90b"
+        },
+        {
+          "source": "tests/test_asr_timing_cache.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_asr_timing_cache.py",
+          "source_sha256": "844d52c277daaf2bd3936e624fd76bf3609ddbd0945501cf87a188cff0734c8c",
+          "runtime_sha256": "844d52c277daaf2bd3936e624fd76bf3609ddbd0945501cf87a188cff0734c8c",
+          "adapted": false,
+          "distributed_source_sha256": "844d52c277daaf2bd3936e624fd76bf3609ddbd0945501cf87a188cff0734c8c"
+        },
+        {
+          "source": "tests/test_chatcut_reference.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_chatcut_reference.py",
+          "source_sha256": "8842717eebbf613d7bab54ad5150e22627ff27d7f5c998c106f088bb375dc38a",
+          "runtime_sha256": "8842717eebbf613d7bab54ad5150e22627ff27d7f5c998c106f088bb375dc38a",
+          "adapted": false,
+          "distributed_source_sha256": "8842717eebbf613d7bab54ad5150e22627ff27d7f5c998c106f088bb375dc38a"
+        },
+        {
+          "source": "tests/test_ffmpeg_filter_file.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_ffmpeg_filter_file.py",
+          "source_sha256": "76c1e931fbb8760e16c7e2deda02040f7bde5ddb802d548a1b1e99c924537221",
+          "runtime_sha256": "76c1e931fbb8760e16c7e2deda02040f7bde5ddb802d548a1b1e99c924537221",
+          "adapted": false,
+          "distributed_source_sha256": "76c1e931fbb8760e16c7e2deda02040f7bde5ddb802d548a1b1e99c924537221"
+        },
+        {
+          "source": "tests/test_multitrack.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_multitrack.py",
+          "source_sha256": "29a0848d41e4e26e2a65b8f5e83e5d036b86761a7ac6c3aaabf1463964910aeb",
+          "runtime_sha256": "29a0848d41e4e26e2a65b8f5e83e5d036b86761a7ac6c3aaabf1463964910aeb",
+          "adapted": false,
+          "distributed_source_sha256": "29a0848d41e4e26e2a65b8f5e83e5d036b86761a7ac6c3aaabf1463964910aeb"
+        },
+        {
+          "source": "tests/test_paragraph_review.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_paragraph_review.py",
+          "source_sha256": "c97d47133b0460edda529e44687a0a97e2c1ee36a080fa6afa949f2b260a7f52",
+          "runtime_sha256": "c97d47133b0460edda529e44687a0a97e2c1ee36a080fa6afa949f2b260a7f52",
+          "adapted": false,
+          "distributed_source_sha256": "c97d47133b0460edda529e44687a0a97e2c1ee36a080fa6afa949f2b260a7f52"
+        },
+        {
+          "source": "tests/test_preserve_mode.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_preserve_mode.py",
+          "source_sha256": "71415d921fff796a509b0091c99deb5053c512616b9232a80c27bc9a5f79ee05",
+          "runtime_sha256": "71415d921fff796a509b0091c99deb5053c512616b9232a80c27bc9a5f79ee05",
+          "adapted": false,
+          "distributed_source_sha256": "71415d921fff796a509b0091c99deb5053c512616b9232a80c27bc9a5f79ee05"
+        },
+        {
+          "source": "tests/test_proxy_manifest.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_proxy_manifest.py",
+          "source_sha256": "5554bb9ffdd78e332a5abe68cb35599a189f1b7acec95c005d20914e3619b0c7",
+          "runtime_sha256": "5554bb9ffdd78e332a5abe68cb35599a189f1b7acec95c005d20914e3619b0c7",
+          "adapted": false,
+          "distributed_source_sha256": "5554bb9ffdd78e332a5abe68cb35599a189f1b7acec95c005d20914e3619b0c7"
+        },
+        {
+          "source": "tests/test_reference_edit_learning.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_reference_edit_learning.py",
+          "source_sha256": "1b1d1ec79a8f4afe20d3c22bfdb24dcd60cac013919cab0007417fd193c94e15",
+          "runtime_sha256": "1b1d1ec79a8f4afe20d3c22bfdb24dcd60cac013919cab0007417fd193c94e15",
+          "adapted": false,
+          "distributed_source_sha256": "1b1d1ec79a8f4afe20d3c22bfdb24dcd60cac013919cab0007417fd193c94e15"
+        },
+        {
+          "source": "tests/test_review_status.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_review_status.py",
+          "source_sha256": "30654075f2f8e3028994187c4563af03da711cadfe07165860db75327b3041fb",
+          "runtime_sha256": "30654075f2f8e3028994187c4563af03da711cadfe07165860db75327b3041fb",
+          "adapted": false,
+          "distributed_source_sha256": "30654075f2f8e3028994187c4563af03da711cadfe07165860db75327b3041fb"
+        },
+        {
+          "source": "tests/test_skill_manifest.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_skill_manifest.py",
+          "source_sha256": "6fbe8e7777e2ff267a97d504bed3f48dda5684f015b268c65c81a0363a79b934",
+          "runtime_sha256": "b342eca4851eb3967f7b7f241369fa1c9a893c903c903b3e9903083c49d38068",
+          "adapted": true,
+          "distributed_source_sha256": "6fbe8e7777e2ff267a97d504bed3f48dda5684f015b268c65c81a0363a79b934"
+        },
+        {
+          "source": "tests/test_v12_workflow.py",
+          "runtime": "skills/podcast-post-production/modules/audio-edit/tests/test_v12_workflow.py",
+          "source_sha256": "04707d7436c5d58c16d5058804d5d57c213b51280b62fd1478a71697274e3c3e",
+          "runtime_sha256": "04707d7436c5d58c16d5058804d5d57c213b51280b62fd1478a71697274e3c3e",
+          "adapted": false,
+          "distributed_source_sha256": "04707d7436c5d58c16d5058804d5d57c213b51280b62fd1478a71697274e3c3e"
+        }
+      ],
+      "scope": "full audio v1.7 with package guards/shared transport; subtitle opt-in changes only; remaining modules retain rc6.2 adapters",
+      "distributed_snapshot_redactions": [
+        {
+          "source": "references/synchronized-multitrack.md",
+          "original_sha256": "cff724e436e6b446c1a0b2c841c07fac0a38ed812698a6ace75410c6031f5bb1",
+          "distributed_source_sha256": "daf7154aa2df9c99f45ec1076ab5ebe1e5b34bbf61d6d578e3c3e791a458ee13",
+          "reason": "Remove personal budget amount from public source-data export; functional code/tests unchanged. Original source tar/hash retained privately."
+        }
+      ]
+    },
+    {
+      "mode": "video-conform",
+      "commit": "b84c5ed7660721a23bf9abb5f46dbc27984cc144",
+      "source_status": "OPEN upstream PR #4, not merged",
+      "source_version": null,
+      "adapter": "source-adaptations/video-conform-rc63.patch",
+      "files": [
+        {
+          "source": "SKILL.md",
+          "runtime": "skills/podcast-post-production/modules/video-conform/workflow.md",
+          "source_sha256": "3d927474bbed864c111acddbb6ec1eddc17d4cf136115df1d1961b90d5a9433a",
+          "runtime_sha256": "c1b6fa12e5df5cc839886e984389eaf5bee95221d6c30d4ffdf573966edb2271",
+          "adapted": true,
+          "distributed_source_sha256": "3d927474bbed864c111acddbb6ec1eddc17d4cf136115df1d1961b90d5a9433a"
+        },
+        {
+          "source": "references/subtitle-review.md",
+          "runtime": "skills/podcast-post-production/modules/video-conform/references/subtitle-review.md",
+          "source_sha256": "3cfce0137933312ec102a7b6855fda4826de7c93616f3d5a18de14539d26de6c",
+          "runtime_sha256": "3cfce0137933312ec102a7b6855fda4826de7c93616f3d5a18de14539d26de6c",
+          "adapted": false,
+          "distributed_source_sha256": "3cfce0137933312ec102a7b6855fda4826de7c93616f3d5a18de14539d26de6c"
+        },
+        {
+          "source": "references/subtitle-workflow.md",
+          "runtime": "skills/podcast-post-production/modules/video-conform/references/subtitle-workflow.md",
+          "source_sha256": "b0bd31b891189c8db10aabaf5ccec482b51f207c27cc09d54dffc427e0ceb155",
+          "runtime_sha256": "b0bd31b891189c8db10aabaf5ccec482b51f207c27cc09d54dffc427e0ceb155",
+          "adapted": false,
+          "distributed_source_sha256": "b0bd31b891189c8db10aabaf5ccec482b51f207c27cc09d54dffc427e0ceb155"
+        },
+        {
+          "source": "scripts/audit_subtitle_sources.py",
+          "runtime": "skills/podcast-post-production/modules/video-conform/scripts/audit_subtitle_sources.py",
+          "source_sha256": "1a4d923660247b933e3e6d659afa2854fc9f48c3726c360711ac10d0fdf51954",
+          "runtime_sha256": "3bb839434650c29311f3123bb67edce9a8911ad72dd417df47df219ebc7f2282",
+          "adapted": true,
+          "distributed_source_sha256": "1a4d923660247b933e3e6d659afa2854fc9f48c3726c360711ac10d0fdf51954"
+        },
+        {
+          "source": "scripts/subtitle_policy.py",
+          "runtime": "skills/podcast-post-production/modules/video-conform/scripts/subtitle_policy.py",
+          "source_sha256": "1eb6548acacb462e4111a0b7ae3affc9a70ccb34711c48459f141d21fe9b81cb",
+          "runtime_sha256": "1eb6548acacb462e4111a0b7ae3affc9a70ccb34711c48459f141d21fe9b81cb",
+          "adapted": false,
+          "distributed_source_sha256": "1eb6548acacb462e4111a0b7ae3affc9a70ccb34711c48459f141d21fe9b81cb"
+        },
+        {
+          "source": "scripts/subtitle_review.py",
+          "runtime": "skills/podcast-post-production/modules/video-conform/scripts/subtitle_review.py",
+          "source_sha256": "7c38f691db322a6c418b7de624413e6543e59f5fab712a7b3a5316b91e002933",
+          "runtime_sha256": "06b80f6931889893304c6538e3a9e4c21b060e055fd1599422c945c235143720",
+          "adapted": true,
+          "distributed_source_sha256": "7c38f691db322a6c418b7de624413e6543e59f5fab712a7b3a5316b91e002933"
+        },
+        {
+          "source": "scripts/validate_srt.py",
+          "runtime": "skills/podcast-post-production/modules/video-conform/scripts/validate_srt.py",
+          "source_sha256": "1c96faf57f9321e388872bdb5d520ce76ca2e1ad8a40e876105c24c1d1d8e152",
+          "runtime_sha256": "02d916b0fb4a8c5bcce80c0eca4bd81d3e525d7ef5c14547bf50aff4c59e2d08",
+          "adapted": true,
+          "distributed_source_sha256": "1c96faf57f9321e388872bdb5d520ce76ca2e1ad8a40e876105c24c1d1d8e152"
+        },
+        {
+          "source": "tests/test_subtitle_upgrade.py",
+          "runtime": "skills/podcast-post-production/modules/video-conform/tests/test_subtitle_upgrade.py",
+          "source_sha256": "c2b1d6f8200dafaacf52b1f6baef65744e0b7f8f757f0c1159963308ca4d0ee0",
+          "runtime_sha256": "c2b1d6f8200dafaacf52b1f6baef65744e0b7f8f757f0c1159963308ca4d0ee0",
+          "adapted": false,
+          "distributed_source_sha256": "c2b1d6f8200dafaacf52b1f6baef65744e0b7f8f757f0c1159963308ca4d0ee0"
+        }
+      ],
+      "scope": "full audio v1.7 with package guards/shared transport; subtitle opt-in changes only; remaining modules retain rc6.2 adapters"
+    }
+  ]
 }
