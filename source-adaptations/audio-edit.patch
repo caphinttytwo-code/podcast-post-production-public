@@ -1,0 +1,22 @@
+--- a/scripts/render_podcast_edl.py
++++ b/scripts/render_podcast_edl.py
+@@ -1,5 +1,11 @@
+ #!/usr/bin/env python3
+ """Render a removal EDL and master a podcast to MP3, WAV, or both."""
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args
++
+ 
+ import argparse
+ import json
+@@ -291,6 +297,7 @@
+     parser.add_argument("--dry-run", action="store_true")
+     parser.add_argument("--force", action="store_true")
+     args = parser.parse_args()
++    protect_output_args(args)
+ 
+     data = json.loads(args.edl.read_text(encoding="utf-8"))
+     outputs = [args.output] + ([args.also_output] if args.also_output else [])

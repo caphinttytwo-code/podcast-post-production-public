@@ -1,0 +1,37 @@
+name: Beta offline tests (manual; check billing first)
+on:
+  workflow_dispatch:
+    inputs:
+      acknowledge_possible_charges:
+        description: Actions billing depends on runner/account configuration; type YES to run
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  offline:
+    if: inputs.acknowledge_possible_charges == 'YES'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install only isolated Python test dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install 'numpy>=1.24' 'Pillow>=10.1' 'PyYAML>=6'
+      - name: Regression and protection (no cloud model)
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          .venv/bin/python -B skills/podcast-post-production/scripts/run_tests.py --report-dir test-output/regression
+          .venv/bin/python -B -m unittest discover -s skills/podcast-post-production/tests/package_protection -v
+          .venv/bin/python -B -m unittest discover -s skills/podcast-post-production/tests/alpha -v
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: beta-offline-evidence
+          path: test-output/
+          retention-days: 7

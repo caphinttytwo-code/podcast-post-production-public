@@ -1,0 +1,4 @@
+interface:
+  display_name: "播客音视频后期（Beta）"
+  short_description: "Beta 测试版：整合播客音频精剪、视频对版、片花包装、锁版精修与媒体审计，按需使用独立模块"
+  default_prompt: "使用 Beta 测试版 $podcast-post-production 处理这期播客后期，先识别任务模式、素材版本与授权范围，再按对应模块执行和验收。"

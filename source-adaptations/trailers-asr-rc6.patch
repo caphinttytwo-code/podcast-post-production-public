@@ -1,0 +1,32 @@
+--- a/scripts/transcribe_stepfun.py
++++ b/scripts/transcribe_stepfun.py
+@@ -10,6 +10,7 @@
+ import urllib.error
+ import urllib.request
+ from pathlib import Path
++from .files import outside_package, child_output
+ 
+ 
+ STEPFUN_API_BASE_URL = "https://api.stepfun.com/step_plan/v1"
+@@ -175,8 +176,11 @@
+         print(json.dumps({"api_base_url": args.api_base_url, "url": args.url, "model": args.model, "chunks": [str(p) for p in chunks], "offsets_ms": offsets}, ensure_ascii=False, indent=2))
+         return
+ 
++    outside_package(args.output)
++    for name in [f"{chunk.stem}.json" for chunk in chunks] + ["raw-transcript.json", "raw-transcript.txt", "raw-transcript.srt"]:
++        child_output(args.output, name, *chunks)
+     args.output.mkdir(parents=True, exist_ok=True)
+-    api_key = credential(args.key_env, args.keychain_service)
++    api_key = None
+     all_events, delta_records, full_texts = [], [], []
+     for index, (chunk, offset) in enumerate(zip(chunks, offsets), 1):
+         cache = args.output / f"{chunk.stem}.json"
+@@ -184,6 +188,8 @@
+             events = json.loads(cache.read_text(encoding="utf-8"))
+             print(f"[{index}/{len(chunks)}] cached {chunk.name}", flush=True)
+         else:
++            if api_key is None:
++                api_key = credential(args.key_env, args.keychain_service)
+             print(f"[{index}/{len(chunks)}] transcribing {chunk.name}", flush=True)
+             events = transcribe(chunk, api_key, args)
+             cache.write_text(json.dumps(events, ensure_ascii=False, indent=2), encoding="utf-8")

@@ -1,0 +1,137 @@
+{
+  "version": "0.2.0-rc.6.3-beta",
+  "display_version": "0.2-rc6.3beta",
+  "channel": "beta",
+  "distribution": "public-beta",
+  "delivery_state": "PR candidate, not merged, no new Release",
+  "candidate_identity": {
+    "tree_sha256": "dffcaab2ee3085beffea21686a4e3c19eb5dad0453122631e5a4669209935462",
+    "manifest_sha256": "c03232d02ae2c87264d0e67513eb94f73316819779e3374154dc7f037cdd5173",
+    "archive_sha256": "f4422e7fb9d99153fc8f44bf73d51b84612eb1fbb387e23166296300b3de5175"
+  },
+  "candidate_files_excluding_manifest": 162,
+  "platform": "macOS Apple Silicon",
+  "model_api_calls": 0,
+  "real_media_uploads": 0,
+  "test_configurations": [
+    {
+      "standard_ffmpeg": "8.1.1",
+      "standard_ffprobe": "8.1.1",
+      "review_ffmpeg": "9.0.2",
+      "review_explicit": true,
+      "status": "PASS",
+      "skipped": false,
+      "counts": {
+        "regression_unique": 223,
+        "audio_source_included": 130,
+        "subtitle_source_included": 35,
+        "compatibility_103_reruns_overlapping": 103,
+        "setup_security_orchestration": 52,
+        "legacy_cli_interfaces": 29,
+        "new_cli_interfaces": 15,
+        "package_protection": 15,
+        "synthetic_steps": 21,
+        "artifact_assertions": 28,
+        "production_protection": 18,
+        "subtitle_e2e": 13,
+        "feature_smokes": 16
+      },
+      "final_archive_identity_matches": true
+    },
+    {
+      "standard_ffmpeg": "9.0.2",
+      "standard_ffprobe": "9.0.2",
+      "review_ffmpeg": "9.0.2",
+      "review_explicit": true,
+      "status": "PASS",
+      "skipped": false,
+      "counts": {
+        "regression_unique": 223,
+        "audio_source_included": 130,
+        "subtitle_source_included": 35,
+        "compatibility_103_reruns_overlapping": 103,
+        "setup_security_orchestration": 52,
+        "legacy_cli_interfaces": 29,
+        "new_cli_interfaces": 15,
+        "package_protection": 15,
+        "synthetic_steps": 21,
+        "artifact_assertions": 28,
+        "production_protection": 18,
+        "subtitle_e2e": 13,
+        "feature_smokes": 16
+      },
+      "final_archive_identity_matches": true
+    }
+  ],
+  "counting": "103 compatibility cases are a subset rerun of 223; repeated environments, probes and pre/post installation never added as unique cases",
+  "negative_environments": {
+    "below_minimum_simulated_8.1.0": {
+      "PASS": 5,
+      "BLOCKED": 15,
+      "NOT RUN": 1
+    },
+    "missing_review_filters": {
+      "PASS": 20,
+      "BLOCKED": 1
+    },
+    "missing_font": {
+      "PASS": 16,
+      "BLOCKED": 5
+    },
+    "missing_numpy_pillow": {
+      "PASS": 11,
+      "BLOCKED": 9,
+      "NOT RUN": 1
+    },
+    "verdict": "PASS for correct refusal/isolation only; unsupported media production remains BLOCKED",
+    "source_hashes": "unchanged in all four runs"
+  },
+  "mock_install": {
+    "scope": "external mock host only; real runtime unchanged",
+    "status": "PASS",
+    "pre_post_feature_smokes": 16,
+    "setup_self_tests": 52,
+    "identity_unchanged": true
+  },
+  "source_protection": {
+    "roots": 12,
+    "files": 333,
+    "status": "PASS"
+  },
+  "sources": {
+    "audio": {
+      "version": "1.7.0",
+      "commit": "46eefcdfa5cc7c4af68da87990850a23593ecf93",
+      "state": "merged and released"
+    },
+    "subtitle": {
+      "commit": "b84c5ed7660721a23bf9abb5f46dbc27984cc144",
+      "state": "upstream PR #4 OPEN, not merged"
+    },
+    "public_source_data_redaction": "one document budget value removed; original/distributed hashes recorded; code/test assertions unchanged"
+  },
+  "independent_review": {
+    "status": "PUBLIC_BETA_CANDIDATE_TECHNICAL_REVIEW_PASS",
+    "unresolved_blockers": [],
+    "issues_found_and_fixed": 6,
+    "actual_execution": [
+      "final ZIP/tree/manifest and163members",
+      "all local documentation links and single entrypoint",
+      "recursive public privacy and MIT/provenance review",
+      "offline source adaptation replay",
+      "v03 five-feature external mock installation, 52 self tests, pre/post quick tests",
+      "v02 independent223regression/103overlapping compatibility/15protection/52self tests; scripts/tests proven byte-identical to v03",
+      "read-only cross-check of primary v03 both environments full results and source hashes",
+      "12protected roots333files and2originalsource archives unchanged"
+    ],
+    "not_independently_rerun": "Full media batches were reviewed from primary raw final-v03 evidence, not counted as an independent full-media execution",
+    "raw_reports": "Private audit directory; public sanitized report validation/independent-review.md"
+  },
+  "ci": "NOT RUN; workflow_dispatch only",
+  "host_routing": "NOT RUN",
+  "human_full_review": "NOT RUN",
+  "real_api_entitlement_price_quota": "NOT VERIFIED",
+  "windows_linux": "NOT RUN",
+  "old_runtime_switch": false,
+  "release_ready": false
+}

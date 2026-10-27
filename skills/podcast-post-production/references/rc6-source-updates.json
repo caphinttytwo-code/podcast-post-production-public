@@ -1,0 +1,33 @@
+{
+  "base": {
+    "version": "0.1.0-rc.5",
+    "zip_sha256": "a143a2a17710ff57ba0502ef52b3de09395e364b0efa0ce61f74bad2e8f192e6"
+  },
+  "asr_security_updates": [
+    {
+      "mode": "audio-edit",
+      "repo": "caphinttytwo-code/edit-solo-podcasts-skill",
+      "commit": "63327a79e4ceceb3f74f9328b4fba6ee9e50805f",
+      "script": "scripts/transcribe_stepfun.py",
+      "source_sha256": "a55944d9556b6fb0762e26a352e5e30c030670aeaecbd737afbf6696c2982c32",
+      "adapter": "source-adaptations/audio-edit-asr-rc6.patch",
+      "runtime_path": "skills/podcast-post-production/shared/stepfun_asr.py",
+      "runtime_sha256": "e993439c09b7b3a838005af78072fe791c546edd6d79e798ae93130aa98cad38",
+      "scope": "ASR redirect-security update only; package guards and lazy credentials preserved by adapter"
+    },
+    {
+      "mode": "trailers",
+      "repo": "caphinttytwo-code/batch-long-video-trailers",
+      "commit": "fa8756e5a03392603b4911090012e8f00fe8e57b",
+      "script": "scripts/transcribe_stepfun.py",
+      "source_sha256": "37db31a21028e57744094ae7cfe95f4a84574330b8c821e2bda515b0a12656da",
+      "adapter": "source-adaptations/trailers-asr-rc6.patch",
+      "runtime_path": "skills/podcast-post-production/shared/stepfun_asr.py",
+      "runtime_sha256": "e993439c09b7b3a838005af78072fe791c546edd6d79e798ae93130aa98cad38",
+      "scope": "ASR redirect-security update only; package guards and lazy credentials preserved by adapter"
+    }
+  ],
+  "licensing": "unchanged; no public redistribution authorization inferred",
+  "channel": "alpha",
+  "distribution": "private-alpha"
+}

@@ -1,0 +1,42 @@
+{
+  "base": {
+    "version": "0.1.0-rc.4",
+    "zip_sha256": "eef6ce48933031a7431a07f7efefb8bab1f42703bc04980c3f93f4c6a16942f0"
+  },
+  "renderer_updates": [
+    {
+      "mode": "audio-edit",
+      "repo": "caphinttytwo-code/edit-solo-podcasts-skill",
+      "commit": "2593bd221c9c38929250b77becc54bce3faf7df4",
+      "script": "scripts/render_podcast_edl.py",
+      "source_sha256": "690fca18e58066ce2d2615f019205e42669c5cc61a915a8217e0a03ee962b5d1",
+      "adapter": "source-adaptations/audio-edit.patch",
+      "runtime_path": "skills/podcast-post-production/modules/audio-edit/scripts/render_podcast_edl.py",
+      "runtime_sha256": "da79afdb344d2081e2066bfdbcbe216cf65159ef4d8ecde2762326cbf5d4c371",
+      "scope": "renderer-only compatibility update; all other module resources retain frozen rc4 provenance"
+    },
+    {
+      "mode": "video-conform",
+      "repo": "caphinttytwo-code/reference-audio-video-conform-skill",
+      "commit": "12570ab09db6fd2b1ad7adde6278813ab85dc4c1",
+      "script": "scripts/render_reference_conform.py",
+      "source_sha256": "2e9abdc46b4f34e85e8a105476dad706216b41e57ee2f50452a84bf88b076054",
+      "adapter": "source-adaptations/video-conform.patch",
+      "runtime_path": "skills/podcast-post-production/modules/video-conform/scripts/render_reference_conform.py",
+      "runtime_sha256": "47a5cf9e8df49703313fd845ddc8b769526e74de29a007e19786a501e4e42ecb",
+      "scope": "renderer-only compatibility update; all other module resources retain frozen rc4 provenance"
+    },
+    {
+      "mode": "trailers",
+      "repo": "caphinttytwo-code/batch-long-video-trailers",
+      "commit": "b256a28c03fcf6bdf19ce61cf3b7a0b57f1e50af",
+      "script": "scripts/extract_headframe_candidates.py",
+      "source_sha256": "2f24fd7c608a1d3c334af911ac1da6b19f0332fa4ef2ee39bfb123e56a6d5160",
+      "adapter": "source-adaptations/trailers.patch",
+      "runtime_path": "skills/podcast-post-production/modules/trailers/scripts/extract_headframe_candidates.py",
+      "runtime_sha256": "e1be99d4fde2b11beb3094829fc8506d6a7714fcd44811a588d507ed41318eb1",
+      "scope": "headframe-only compatibility update; all other resources retain frozen rc4 provenance"
+    }
+  ],
+  "source_policy": "Professional fixes in source repo PRs; reproduce guards via pinned adapters, never edit installed Skills."
+}

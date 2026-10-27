@@ -1,0 +1,570 @@
+--- a/modules/audio-edit/workflow.md
++++ b/modules/audio-edit/workflow.md
+@@ -1,7 +1,3 @@
+----
+-name: edit-solo-podcasts
+-description: Edit audio-only Chinese solo podcasts or already synchronized, equal-length multitrack conversations with listening review, source-preserving edits, rerecord assembly, role transcripts, version records and QA. Use for 单口精剪、已同步等长多轨剪辑、补录装配 and audio mastering. Does not align or repair unequal-length tracks; excludes video editing.
+----
+ 
+ # Edit Solo Podcasts
+ 
+@@ -73,3 +69,11 @@
+ - Read [delivery contract](references/production-workflow.md#delivery-contract). Deliver only the confirmed MP3/WAV formats plus EDL, edit notes, and QA; keep raw/staged/post-edit ASR and process media outside delivery.
+ - Publishing, account actions, artwork, chapters, and enriched metadata require their own authorization. An upload-ready file does not authorize publication.
+ - Script purposes are listed in [resources](references/production-workflow.md#resources); resolve commands from the skill directory.
++
++## Integration entrypoint and environment
++
++This module is sourced from released v1.7.0 (commit 46eefcdfa5cc7c4af68da87990850a23593ecf93).
++Resolve `scripts/`, `references/`, and `assets/` relative to this module. Keep all projects outside the entire package.
++Choose `solo` by default; `synchronized-multitrack` stays inside audio-edit and retains its own project/plan schemas and integer-frame timebase.
++The installer reports `paragraph-review`, `preserve-source`, and `synchronized-multitrack` separately. `audio-edit:full` still describes the solo chain, and is not multitrack verification.
++For standard media production the integration supports paired FFmpeg/FFprobe >=8.1.1; filter-file probing does not reduce this minimum.
+--- a/modules/audio-edit/scripts/analyze_pause_profile.py
++++ b/modules/audio-edit/scripts/analyze_pause_profile.py
+@@ -1,5 +1,12 @@
+ #!/usr/bin/env python3
+ """Compare aggregate pause profiles without emitting transcript text or source identifiers."""
++
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
+ 
+ import argparse
+ import json
+@@ -186,6 +193,7 @@
+     parser.add_argument("--energy-thresholds", type=parse_thresholds, default=[-45.0, -40.0, -38.0])
+     parser.add_argument("--json-out", type=Path)
+     args = parser.parse_args()
++    protect_output_args(args)
+     if (args.base_audio is None) != (args.reference_audio is None):
+         parser.error("--base-audio and --reference-audio must be supplied together")
+ 
+--- a/modules/audio-edit/scripts/audio_qa.py
++++ b/modules/audio-edit/scripts/audio_qa.py
+@@ -1,5 +1,12 @@
+ #!/usr/bin/env python3
+ """Measure an MP3 or WAV podcast delivery and enforce spoken-word QA targets."""
++
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
+ 
+ import argparse
+ import json
+@@ -15,14 +22,9 @@
+ 
+ 
+ def probe(path):
+-    result = run(
+-        [
+-            "ffprobe", "-v", "error", "-show_entries",
+-            "format=duration,size,bit_rate,format_name:stream=codec_name,sample_rate,channels,channel_layout,bit_rate,bits_per_sample,bits_per_raw_sample,sample_fmt",
+-            "-of", "json", str(path),
+-        ]
+-    )
+-    return json.loads(result.stdout)
++    # Keep the integration's shared transport; v1.7 owns its fields and QA rules.
++    from shared.media import probe_json
++    return probe_json(path,entries='format=duration,size,bit_rate,format_name:stream=codec_name,sample_rate,channels,channel_layout,bit_rate,bits_per_sample,bits_per_raw_sample,sample_fmt')
+ 
+ 
+ def loudness(path, target, peak):
+@@ -77,6 +79,7 @@
+     parser.add_argument("--json-out", type=Path)
+     parser.add_argument("--report-only", action="store_true")
+     args = parser.parse_args()
++    protect_output_args(args)
+ 
+     decode(args.audio)
+     media = probe(args.audio)
+--- a/modules/audio-edit/scripts/build_stage_transcript.py
++++ b/modules/audio-edit/scripts/build_stage_transcript.py
+@@ -1,5 +1,12 @@
+ #!/usr/bin/env python3
+ """Build a mechanical-stage transcript without another ASR call."""
++
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
+ 
+ import argparse
+ import json
+@@ -201,6 +208,7 @@
+     parser.add_argument("--max-chars", type=int, default=24)
+     parser.add_argument("--gap-ms", type=int, default=900)
+     args = parser.parse_args()
++    protect_output_args(args)
+ 
+     transcript = read_json(args.source_transcript)
+     edl = read_json(args.edl)
+@@ -215,6 +223,8 @@
+     annotate_edit_timing(retained, cuts, crossfade_ms)
+     cues = grouped_cues(retained, args.max_chars, args.gap_ms)
+     paths = output_paths(args.output_prefix)
++    for destination in paths.values():
++        guard_path(destination, args.source_transcript, args.edl)
+     for path in paths.values():
+         path.parent.mkdir(parents=True, exist_ok=True)
+ 
+--- a/modules/audio-edit/scripts/compare_audio_reference.py
++++ b/modules/audio-edit/scripts/compare_audio_reference.py
+@@ -6,6 +6,13 @@
+ """
+ 
+ from __future__ import annotations
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
++
+ 
+ import argparse
+ import json
+@@ -21,7 +28,7 @@
+     np = None
+ 
+ 
+-SKILL_ROOT = Path(__file__).resolve().parents[1]
++SKILL_ROOT = package_root()
+ SAMPLE_RATE = 8000
+ HOP = 400
+ FPS = SAMPLE_RATE // HOP
+--- a/modules/audio-edit/scripts/compare_reference_edit.py
++++ b/modules/audio-edit/scripts/compare_reference_edit.py
+@@ -7,6 +7,13 @@
+ """
+ 
+ from __future__ import annotations
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
++
+ 
+ import argparse
+ import json
+@@ -21,7 +28,7 @@
+ from pathlib import Path
+ 
+ 
+-SKILL_ROOT = Path(__file__).resolve().parents[1]
++SKILL_ROOT = package_root()
+ TOKEN_RE = re.compile(r"[\u3400-\u9fffA-Za-z0-9]")
+ AUDIO_SAMPLE_RATE = 2000
+ FRAME_SECONDS = 0.02
+@@ -463,6 +470,7 @@
+     parser.add_argument("--include-text", action="store_true")
+     parser.add_argument("--json-out", type=Path)
+     args = parser.parse_args()
++    protect_output_args(args)
+     if (args.baseline_audio is None) != (args.reference_audio is None):
+         parser.error("--baseline-audio and --reference-audio must be supplied together")
+     if (args.baseline_edl is None) != (args.source_duration is None):
+--- a/modules/audio-edit/scripts/editorial_qa.py
++++ b/modules/audio-edit/scripts/editorial_qa.py
+@@ -1,5 +1,12 @@
+ #!/usr/bin/env python3
+ """Combine editorial checks, review state, technical QA, and human approval."""
++
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
+ 
+ import argparse
+ import json
+@@ -90,6 +97,7 @@
+     parser.add_argument("--report-only", action="store_true")
+     parser.add_argument("--require-release-ready", action="store_true")
+     args = parser.parse_args()
++    protect_output_args(args)
+ 
+     edl = read_json(args.edl, "EDL")
+     audio = read_json(args.audio_qa, "audio QA")
+--- a/modules/audio-edit/scripts/multitrack.py
++++ b/modules/audio-edit/scripts/multitrack.py
+@@ -3,6 +3,13 @@
+ All positions are integer frames on a shared clock; paths are project-relative.
+ Source files and existing review versions are never overwritten.
+ """
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
++
+ import argparse
+ import copy
+ import csv
+@@ -165,6 +172,7 @@
+ def prepared_project(source, output):
+     """Decode lossy sources once at native rate; never repair count differences."""
+     source, data, items = project(source)
++    guard_directory(output, source, *[i["resolved_path"] for i in items])
+     output = Path(output).resolve()
+     if output.exists():
+         raise FileExistsError('Use a new preparation directory')
+@@ -198,6 +206,7 @@
+ 
+ 
+ def outside_skill(path):
++    guard_directory(path)
+     if Path(path).resolve().is_relative_to(Path(__file__).resolve().parents[1]):
+         raise ValueError('Keep project artifacts outside the reusable Skill repository')
+ 
+@@ -349,6 +358,7 @@
+ 
+ 
+ def write_track(source, destination, spec, nodes):
++    guard_path(destination, source)
+     with wave.open(str(source),'rb') as src, wave.open(str(destination),'wb') as out:
+         out.setparams((spec['channels'], spec['sample_width'], spec['sample_rate'], 0, 'NONE', 'not compressed'))
+         for node in nodes:
+@@ -387,6 +397,7 @@
+ 
+ 
+ def analysis_mix(path, destination):
++    guard_path(destination, path, *[i["resolved_path"] for i in project(path)[2]])
+     """A labelled listening proxy, never independent synchronization evidence."""
+     path, data, items = project(path); validation = inspect(path)
+     destination = Path(destination)
+@@ -507,6 +518,7 @@
+ 
+ 
+ def render(project_path, plan_path, output, selection='all', transcript_path=None):
++    guard_directory(output, project_path, plan_path, transcript_path)
+     project_path=Path(project_path).resolve();plan_path=Path(plan_path).resolve();output=Path(output).resolve()
+     if output.exists(): raise FileExistsError('Never replace an existing audio/review version')
+     outside_skill(output);timeline=compile_plan(project_path,plan_path)
+@@ -611,6 +623,7 @@
+ 
+ 
+ def build_review(project_path, spec_path, output):
++    guard_directory(output, project_path, spec_path, *[i["resolved_path"] for i in project(project_path)[2]])
+     """Use the existing durable review store, binding all stems and the project."""
+     project_path=Path(project_path).resolve();spec_path=Path(spec_path).resolve();output=Path(output).resolve()
+     validation=inspect(project_path);_,data,items=project(project_path);spec=load(spec_path)
+--- a/modules/audio-edit/scripts/prepare_asr_chunks.py
++++ b/modules/audio-edit/scripts/prepare_asr_chunks.py
+@@ -1,5 +1,13 @@
+ """Create resumable MP3 proxies with an exact source-sample manifest, without ASR."""
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
++
+ import argparse
++import re
+ import json
+ import subprocess
+ import wave
+@@ -8,6 +16,7 @@
+ 
+ 
+ def prepare(source, output, seconds=300):
++    guard_directory(output, source)
+     source, output=Path(source).resolve(),Path(output).resolve()
+     if seconds<=0:raise ValueError('Chunk duration must be positive')
+     if output.is_relative_to(Path(__file__).resolve().parents[1]):raise ValueError('Keep project media outside Skill')
+@@ -28,7 +37,9 @@
+                                   for i,s in enumerate(range(0,total,chunk_frames))]}
+         atomic_json(manifest,state)
+     for row in state['chunks']:
+-        target=output/row['name']
++        name=Path(row['name'])
++        if name.name != row['name'] or not re.fullmatch(r'chunk-[0-9]+\.mp3', row['name']): raise ValueError('Invalid proxy chunk filename')
++        target=guard_path(output/row['name'], source)
+         if row['sha256']:
+             if not target.exists() or sha256(target)!=row['sha256']:raise ValueError('Completed proxy changed')
+             continue
+--- a/modules/audio-edit/scripts/preserve_pcm.py
++++ b/modules/audio-edit/scripts/preserve_pcm.py
+@@ -1,4 +1,11 @@
+ """Sample-exact integer PCM assembly. No mastering, resampling or lossy codec."""
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
++
+ import hashlib
+ import json
+ import os
+@@ -72,6 +79,8 @@
+ 
+ def assemble(source, output, edl, dry_run=False):
+     import numpy as np
++    guard_path(output, source)
++    guard_path(Path(output).with_suffix(Path(output).suffix+".assembly.json"), source)
+     source, output = Path(source), Path(output)
+     if source.resolve() == output.resolve(): raise ValueError('Never overwrite source')
+     if output.suffix.lower() != '.wav': raise ValueError('Preserve mode only delivers PCM WAV')
+--- a/modules/audio-edit/scripts/render_podcast_edl.py
++++ b/modules/audio-edit/scripts/render_podcast_edl.py
+@@ -1,5 +1,12 @@
+ #!/usr/bin/env python3
+ """Render a removal EDL and master a podcast to MP3, WAV, or both."""
++
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
+ 
+ import argparse
+ import json
+@@ -133,6 +140,7 @@
+ 
+ 
+ def encode_mp3(source, output, config, audio_filter=None):
++    guard_path(output,source)
+     command = ["ffmpeg", "-hide_banner", "-nostats", "-y", "-i", str(source)]
+     if audio_filter:
+         command.extend(["-af", audio_filter])
+@@ -147,6 +155,7 @@
+ 
+ 
+ def encode_wav(source, output, config, audio_filter):
++    guard_path(output,source)
+     bit_depth = int(config["wav_bit_depth"])
+     if bit_depth != 24:
+         raise ValueError(f"Unsupported wav_bit_depth: {bit_depth}; expected 24")
+@@ -306,6 +315,7 @@
+     parser.add_argument("--review-copy", action="store_true", help="Render approved cuts as an explicitly unlistened review draft")
+     parser.add_argument("--force", action="store_true")
+     args = parser.parse_args()
++    protect_output_args(args)
+ 
+     data = json.loads(args.edl.read_text(encoding="utf-8"))
+     if data.get('recording_mode', 'solo') != 'solo':
+--- a/modules/audio-edit/scripts/review.py
++++ b/modules/audio-edit/scripts/review.py
+@@ -1,4 +1,11 @@
+ """Version-bound paragraph review, durable local saves and three-way merging."""
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
++
+ import argparse
+ import copy
+ import contextlib
+@@ -32,7 +39,8 @@
+ 
+ 
+ def atomic(path,value):
+-    tmp=path.with_suffix(path.suffix+'.tmp')
++    path=guard_path(path)
++    tmp=guard_path(path.with_suffix(path.suffix+'.tmp'))
+     with tmp.open('wb') as f:
+         f.write(canonical(value));f.flush();os.fsync(f.fileno())
+     tmp.replace(path)
+@@ -44,6 +52,7 @@
+ 
+ 
+ def build(spec_path,output):
++    guard_directory(output, spec_path)
+     spec_path=Path(spec_path).resolve();output=Path(output).resolve()
+     if output.exists():raise ValueError('Use a new version directory; never rebuild reviewed data')
+     if output.is_relative_to(Path(__file__).resolve().parents[1]):raise ValueError('Keep project data outside the Skill repository')
+@@ -151,7 +160,8 @@
+ 
+ @contextlib.contextmanager
+ def transaction_lock(root):
+-    with (root/'.state.lock').open('a+b') as f:
++    guard_directory(root)
++    with guard_path(root/'.state.lock').open('a+b') as f:
+         if os.name=='nt':
+             import msvcrt
+             f.seek(0,2)
+@@ -168,6 +178,7 @@
+ 
+ class Store:
+     def __init__(self,root):
++        guard_directory(root)
+         self.root=Path(root).resolve();self.lock=threading.Lock()
+         self.data=json.loads((self.root/'data.json').read_text());self.manifest=json.loads((self.root/'manifest.json').read_text())
+         self.binding=self.data['binding'];self.by={x['id']:x for x in self.data['items']}
+@@ -186,13 +197,13 @@
+             for item in self.manifest['bound_media']:
+                 stat=Path(item['path']).stat();signature=(stat.st_size,stat.st_mtime_ns)
+                 key='stem:'+item['id']
+-                if getattr(self,'media_signatures',{}).get(key)!=signature and digest(item['path'])!=item['sha256']:raise ValueError('Bound stem changed')
++                if digest(item['path'])!=item['sha256']:raise ValueError('Bound stem changed')
+                 signatures[key]=signature
+         for role,key in [('source','source_sha256'),('audio','audio_sha256'),('manuscript','manuscript_sha256')]:
+             path=self.manifest.get(role)
+             if path:
+                 stat=Path(path).stat();signature=(stat.st_size,stat.st_mtime_ns)
+-                if getattr(self,'media_signatures',{}).get(role)!=signature and digest(path)!=self.binding[key]:raise ValueError('Bound media changed')
++                if digest(path)!=self.binding[key]:raise ValueError('Bound media changed')
+                 signatures[role]=signature
+         self.media_signatures=signatures
+ 
+@@ -212,6 +223,7 @@
+             raise ValueError('Use adopt to approve an insertion, replacement or move')
+ 
+     def apply(self,body):
++        guard_directory(self.root, self.manifest.get("source"), self.manifest.get("audio"), self.manifest.get("manuscript"))
+         with self.lock, transaction_lock(self.root):
+             self.verify_media()
+             if body.get('binding')!=self.binding:raise ValueError('Wrong review version')
+--- a/modules/audio-edit/scripts/transcribe_stepfun.py
++++ b/modules/audio-edit/scripts/transcribe_stepfun.py
+@@ -1,5 +1,12 @@
+ #!/usr/bin/env python3
+ """Resumable StepFun StepAudio SSE transcription for pre-chunked audio."""
++
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, package_root
++from shared.guards import guard_path, guard_directory
+ 
+ import argparse
+ import base64
+@@ -51,68 +58,13 @@
+     return int(round(float(proc.stdout.strip()) * 1000))
+ 
+ 
+-class ASRRedirectError(RuntimeError):
+-    """The caller must approve an endpoint change before credentials are sent."""
+-
+-
+-class RejectASRRedirects(urllib.request.HTTPRedirectHandler):
+-    def redirect_request(self, req, fp, code, msg, headers, newurl):
+-        # No redirect target is contacted; never log headers or Location values.
+-        if fp is not None:
+-            fp.close()
+-        raise ASRRedirectError(
+-            f"ASR HTTP {code} redirect rejected; verify the endpoint before retrying"
+-        )
+-
+-
+-def transcribe(path, api_key, args):
+-    payload = {
+-        "audio": {
+-            "data": base64.b64encode(path.read_bytes()).decode("ascii"),
+-            "input": {
+-                "transcription": {
+-                    "language": args.language,
+-                    "hotwords": args.hotword,
+-                    "model": args.model,
+-                    "enable_itn": True,
+-                    "enable_timestamp": True,
+-                },
+-                "format": {"type": args.format, "channel": args.channels},
+-            },
+-        }
+-    }
+-    request = urllib.request.Request(
+-        args.url,
+-        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+-        headers={
+-            "Authorization": f"Bearer {api_key}",
+-            "Content-Type": "application/json",
+-            "Accept": "text/event-stream",
+-        },
+-        method="POST",
+-    )
+-    events = []
+-    try:
+-        with urllib.request.build_opener(RejectASRRedirects()).open(request, timeout=args.timeout) as response:
+-            for raw in response:
+-                line = raw.decode("utf-8", errors="replace").strip()
+-                if not line.startswith("data:"):
+-                    continue
+-                data = line[5:].strip()
+-                if not data or data == "[DONE]":
+-                    continue
+-                event = json.loads(data)
+-                if event.get("type") == "error":
+-                    raise RuntimeError(event.get("message", "StepFun ASR error"))
+-                events.append(event)
+-    except urllib.error.HTTPError as exc:
+-        detail = exc.read().decode("utf-8", errors="replace")
+-        raise RuntimeError(f"HTTP {exc.code}: {detail[:800]}") from exc
+-    return events
++# Network request construction, credentials and redirect rejection have one implementation.
++from shared.stepfun_asr import ASRRedirectError, RejectASRRedirects, transcribe, credential
+ 
+ 
+ def atomic_json(path, value):
+-    tmp = path.with_suffix(path.suffix + ".tmp")
++    path = guard_path(path)
++    tmp = guard_path(path.with_suffix(path.suffix + ".tmp"))
+     tmp.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+     tmp.replace(path)
+ 
+@@ -229,6 +181,7 @@
+     parser.add_argument("--force", action="store_true", help="ignore per-chunk JSON caches")
+     parser.add_argument("--dry-run", action="store_true")
+     args = parser.parse_args()
++    protect_output_args(args)
+     args.url = api_url(args.api_base_url, ASR_PATH)
+ 
+     chunks = sorted(args.chunks.glob(args.glob))
+@@ -246,6 +199,7 @@
+         print(json.dumps({"api_base_url": args.api_base_url, "url": args.url, "model": args.model, "chunks": [str(p) for p in chunks], "offsets_ms": offsets, "timing_basis": timing_basis}, ensure_ascii=False, indent=2))
+         return
+ 
++    guard_directory(args.output, *chunks, *([args.manifest] if args.manifest else []))
+     args.output.mkdir(parents=True, exist_ok=True)
+     api_key = None
+     all_events, delta_records, full_texts, timing_issues = [], [], [], []
+--- a/modules/audio-edit/tests/test_skill_manifest.py
++++ b/modules/audio-edit/tests/test_skill_manifest.py
+@@ -9,22 +9,23 @@
+ 
+ class SkillManifestTests(unittest.TestCase):
+     def test_frontmatter_and_release_consistency(self):
+-        text=(ROOT/'SKILL.md').read_text();front=yaml.safe_load(text.split('---',2)[1])
+-        self.assertEqual(front['name'],'edit-solo-podcasts')
++        text=(ROOT.parents[1]/'SKILL.md').read_text();front=yaml.safe_load(text.split('---',2)[1])
++        self.assertEqual(front['name'],'podcast-post-production')
+         self.assertIsInstance(front['description'],str)
+-        version=re.search(r'Current release: `([^`]+)`',text).group(1)
++        version=re.search(r'Current release: `([^`]+)`',(ROOT/'workflow.md').read_text()).group(1)
++        self.assertEqual(version,'v1.7.0')
+         self.assertIn(f'Skill release: `{version}`',(ROOT/'references/version-history.md').read_text())
+ 
+     def test_local_reference_links_resolve(self):
+-        for file in [ROOT/'SKILL.md',*(ROOT/'references').glob('*.md')]:
++        for file in [ROOT/'workflow.md',*(ROOT/'references').glob('*.md')]:
+             for target in re.findall(r'\]\(([^)]+)\)',file.read_text()):
+                 target=target.split('#',1)[0]
+                 if target and not re.match(r'\w+://',target):
+                     self.assertTrue((file.parent/target).exists(),f'{file.name}: {target}')
+ 
+     def test_ui_metadata_retains_skill_entrypoint(self):
+-        value=yaml.safe_load((ROOT/'agents/openai.yaml').read_text())
+-        self.assertIn('$edit-solo-podcasts',value['interface']['default_prompt'])
++        value=yaml.safe_load((ROOT.parents[1]/'agents/openai.yaml').read_text())
++        self.assertIn('$podcast-post-production',value['interface']['default_prompt'])
+ 
+ 
+ if __name__=='__main__':unittest.main()

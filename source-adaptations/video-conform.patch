@@ -1,0 +1,53 @@
+--- a/scripts/render_reference_conform.py
++++ b/scripts/render_reference_conform.py
+@@ -2,6 +2,20 @@
+ """Dry-run or render a B conform: selected source picture plus continuous reference audio."""
+ 
+ from __future__ import annotations
++
++from pathlib import Path as _PPPath
++import sys as _ppsys
++_ppsys.path.insert(0, str(_PPPath(__file__).resolve().parents[3]))
++from shared.files import protect_output_args, distinct_output, child_output
++
++
++from pathlib import Path as _PackagePath
++import sys as _package_sys
++_PACKAGE_ROOT = _PackagePath(__file__).resolve().parents[3]
++if str(_PACKAGE_ROOT) not in _package_sys.path:
++    _package_sys.path.insert(0, str(_PACKAGE_ROOT))
++from shared.files import sha256 as digest
++
+ 
+ import argparse
+ import hashlib
+@@ -19,8 +33,6 @@
+     return int(hour) * 3600 + int(minute) * 60 + float(remainder)
+ 
+ 
+-def digest(path: Path) -> str:
+-    return hashlib.sha256(path.read_bytes()).hexdigest()
+ 
+ 
+ def filter_graph(segments: list[dict], fps: int, soft_frames: int, target_duration: float,
+@@ -85,6 +97,7 @@
+     parser.add_argument("--preset", default="medium")
+     parser.add_argument("--execute", action="store_true", help="Render after the default dry-run")
+     args = parser.parse_args()
++    protect_output_args(args)
+ 
+     payload = json.loads(args.manifest.read_text(encoding="utf-8"))
+     if payload.get("audio_strategy") != "reference-audio-continuous":
+@@ -128,8 +141,10 @@
+                     abs(float(row["residual_error_seconds"])) > maximum_residual):
+                 raise SystemExit(f"Unsafe seek calibration at segment {segment['index']}")
+     output = args.output.resolve()
+-    partial = output.with_name(f".{output.stem}.encoding{output.suffix}")
+-    filter_path = output.with_suffix(".filter.txt")
++    distinct_output(output, source, reference)
++    protected = [source, reference, args.manifest] + ([args.seek_calibration] if args.seek_calibration else [])
++    partial = child_output(output.parent, f".{output.stem}.encoding{output.suffix}", *protected)
++    filter_path = child_output(output.parent, output.with_suffix(".filter.txt").name, *protected)
+     if output.exists() or partial.exists():
+         raise SystemExit(f"Refusing to overwrite output or partial: {output}")
+     segments = payload["segments"]

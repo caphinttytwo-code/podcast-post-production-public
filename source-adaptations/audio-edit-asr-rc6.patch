@@ -1,0 +1,20 @@
+--- a/scripts/transcribe_stepfun.py
++++ b/scripts/transcribe_stepfun.py
+@@ -10,6 +10,7 @@
+ import urllib.error
+ import urllib.request
+ from pathlib import Path
++from .files import outside_package, child_output
+ 
+ 
+ STEPFUN_API_BASE_URL = "https://api.stepfun.com/step_plan/v1"
+@@ -175,6 +176,9 @@
+         print(json.dumps({"api_base_url": args.api_base_url, "url": args.url, "model": args.model, "chunks": [str(p) for p in chunks], "offsets_ms": offsets}, ensure_ascii=False, indent=2))
+         return
+ 
++    outside_package(args.output)
++    for name in [f"{chunk.stem}.json" for chunk in chunks] + ["raw-transcript.json", "raw-transcript.txt", "raw-transcript.srt"]:
++        child_output(args.output, name, *chunks)
+     args.output.mkdir(parents=True, exist_ok=True)
+     api_key = None
+     all_events, delta_records, full_texts = [], [], []
