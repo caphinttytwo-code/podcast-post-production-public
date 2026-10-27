@@ -29,12 +29,13 @@ def probe(mode, feature, binaries, font, directory):
         path = child_output(directory, name)
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
         return path
-    def run(name, command):
+    def run(name, command, expected_exit=0):
         result = subprocess.run([str(x) for x in command], capture_output=True, text=True,
                                 encoding='utf-8', errors='replace', env=env, timeout=120)
         child_output(directory, name + '.log').write_text(result.stdout + result.stderr, encoding='utf-8')
-        logs.append({'step': name, 'command': [str(x) for x in command], 'exit_code': result.returncode})
-        if result.returncode:
+        logs.append({'step': name, 'command': [str(x) for x in command], 'exit_code': result.returncode,
+                     'expected_exit': expected_exit})
+        if result.returncode != expected_exit:
             raise RuntimeError(name + ': ' + result.stderr[-1200:])
         return result
     def script(module, name, *args):
@@ -43,7 +44,23 @@ def probe(mode, feature, binaries, font, directory):
         return run(name, [binaries['ffmpeg']['path'], '-v', 'error', *args])
     protected = {}
 
-    if mode == 'audio-edit' and feature in ('paragraph-review','preserve-source','synchronized-multitrack'):
+    if mode == 'editorial-plan':
+        source = save('synthetic-plan.json', {
+            'schema_version':'1.0', 'revision':'synthetic-only',
+            'sources':[{'id':'main','sample_rate':48000,'frames':4800000}],
+            'base':{'source_id':'main','start_frame':0,'end_frame':4800000},
+            'items':[{'id':'cut','action':'remove','start_frame':480000,'end_frame':2400000,
+                      'reason':'Synthetic repetitive passage; no human decision'}],
+            'recommended_ids':['cut'], 'choices':{}})
+        protected[str(source)] = sha256(source)
+        report = directory/'planning-check.json'
+        run('planning-budget-and-pending-choices',script(mode,'check_plan.py',source,'--report',report),expected_exit=2)
+        data = json.loads(report.read_text())
+        if (data['recommendation']['estimated_seconds'] != 60 or
+            data['recorded_apply_choices']['estimated_seconds'] != 100 or
+            data['pending_recommended_ids'] != ['cut'] or data['executable'] or data['approval_generated']):
+            raise RuntimeError('Planning probe manufactured decisions or miscounted duration')
+    elif mode == 'audio-edit' and feature in ('paragraph-review','preserve-source','synchronized-multitrack'):
         import importlib.util
         scripts=ROOT/'modules/audio-edit/scripts'
         def module(name):

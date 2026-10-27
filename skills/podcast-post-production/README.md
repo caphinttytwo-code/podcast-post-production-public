@@ -1,11 +1,9 @@
-# 播客音视频后期 — 0.2-rc6.3beta
+# 剪辑导演 — 0.5.0-beta
 
-**公开 Beta 候选；包内版本 0.2.0-rc.6.3-beta，MIT 许可，非稳定版。当前未合并、未发布该版本 Release。**
+0.5.0-beta 待确认发布候选；分发技术就绪不代表已发布，安装和切换状态以宿主报告为准。技术 ID 仍为 `podcast-post-production`，现有五模块及旧项目接续方式保留，新增 `editorial-plan` 内容策划入口与显式 `target-runtime` 音频内容分支。
 
-候选审阅与下载入口：[公开 PR #1](https://github.com/caphinttytwo-code/podcast-post-production-public/pull/1)，完整 ZIP 和 SHA-256 在 PR 分支的 candidates 目录。下载后核对候选清单，再解压。包包含五模块、安装与环境检查、API/费用提示、快速/完整测试、全部离线夹具与报告模板。
+先读取 [SKILL.md](SKILL.md)。长节目筛选、目标时长取舍与补录位置安排进入 [内容策划](modules/editorial-plan/workflow.md)；单项字幕、封面、校准或审计直接进入原模块，不要求先做全片策划。方案 JSON 是非执行资料，不会产生 EDL 或用户授权。
 
-先读取 SKILL.md 与 references/alpha-installation.md，再用 `python3 -B scripts/setup_skill.py inspect --work-dir /ABS/NEW/preflight` 检查。展示能做什么、缺什么、外部条件和可能费用；选择快速（推荐）/完整/跳过以及是否补齐包外独立 Python 环境后，使用包内安装入口。目标必须是新增目录，不覆盖旧 Skills；安装后复测并展示 installation-report.md/JSON。
+本候选以已核验的 0.2.0-rc.6.3-beta 运行快照为基线。原始来源、许可及冻结测试夹具继续保留；快照不代表当前维护仓库 HEAD。增量、完整文件指纹及本轮测试证据放在包外审计中，供另一个项目整合、发布与整理。
 
-最低 Python 3.10；媒体功能最低 FFmpeg/FFprobe 8.1.1，仍须相应编码器、滤镜和中文字体。测试仅用合成素材/模拟响应，不调用制作模型、不上传节目、不试扣费；宿主模型费用另计。普通缺项允许用户明确选择受限安装，身份/保护失败必须停止。
-
-来源/许可见 NOTICE.md；本版改动见 references/beta-release.md；实际验证范围见 references/release-validation.md。软件补齐不能保证内容判断正确、恢复缺失时间轴、完成宿主路由或真人审听。测试通过不授权切换、清理或发布节目。旧私有仓库和旧包保持不变。
+兼容性与移交约束见 [本地候选说明](references/local-050-upgrade.md)。最低环境与原 setup 命令见 [环境要求](references/dependencies.md)及[安装参考](references/alpha-installation.md)；命令存在不代表本次获准安装。包内项目输出保护、原件保护、费用与上传授权、人工审核区分继续有效。

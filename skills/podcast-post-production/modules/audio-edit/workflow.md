@@ -42,6 +42,8 @@ Maintain the repository copy; installed copies are validated runtime copies.
 
 ## Route the Editorial Branch
 
+For a user-approved target-runtime or structural content plan, use [target-runtime handoff](references/target-runtime.md). This explicit branch permits only the confirmed macro losses; retained speech still follows integrity checks. Do not silently turn `rigorous-explainer` into a runtime-cutting branch. Plan-only requests route to [content planning](../editorial-plan/workflow.md), not this renderer.
+
 1. Inspect the request, transcript, existing EDL, edit notes, and delivery target.
 2. Use `casual-non-rigorous` only for light solo commentary, personal reflection, entertainment, informal knowledge sharing, or conversational shows where small detail loss does not create factual risk.
 3. Read [references/editorial-decision-rules.md](references/editorial-decision-rules.md), then [references/casual-non-rigorous.md](references/casual-non-rigorous.md), before creating or changing that branch's EDL.

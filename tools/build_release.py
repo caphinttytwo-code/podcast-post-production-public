@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 import sys
 import zipfile
@@ -19,22 +20,25 @@ def main():
     p.add_argument('--output-dir', type=Path, required=True)
     p.add_argument('--manifest-only', action='store_true')
     args = p.parse_args()
+    out = args.output_dir.resolve()
+    if out == ROOT or ROOT in out.parents or out in ROOT.parents:
+        raise ValueError('Build artifacts must be outside the Skill and its ancestors')
+    if not args.manifest_only and out.exists():
+        raise FileExistsError('Build output must be fresh')
     files = inventory(ROOT)
-    data = {'version': '0.2.0-rc.6.3-beta', 'channel': 'beta', 'distribution': 'public-beta',
-            'public_distribution_ready': True, 'public_distribution_blockers': [],
-            'display_version': '0.2-rc6.3beta', 'license': 'MIT', 'files': files,
-            'tree_sha256': tree_digest(files),
-            'algorithm': 'sha256 UTF-8 sorted <sha256>  <POSIX relative path> LF; manifest itself excluded',
-            'base_rc61_zip_sha256': 'df9231ea213816cc1f356f403eaf89a421c2569882dd9a5a1105cf946d5b3e8e'}
+    # Retain the candidate's declared version, visibility/readiness, license and lineage.
+    # Building a local candidate must never silently turn it into a public release.
+    data = json.loads((ROOT / 'package-manifest.json').read_text(encoding='utf-8'))
+    match = re.search(r'^  version: [\"\']([^\"\']+)[\"\']$', (ROOT / 'SKILL.md').read_text(encoding='utf-8'), re.M)
+    if not match or match.group(1) != data['version']:
+        raise ValueError('Skill and manifest versions differ')
+    data.update(files=files, tree_sha256=tree_digest(files))
     (ROOT / 'package-manifest.json').write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     identity = verify(ROOT)
     if args.manifest_only:
         print(json.dumps(identity)); return
-    out = args.output_dir.resolve()
-    if out == ROOT or ROOT in out.parents:
-        raise ValueError('Build artifacts must be outside the Skill')
     out.mkdir(parents=True, exist_ok=False)
-    archive = out / 'podcast-post-production-v0.2.0-rc.6.3-beta.zip'
+    archive = out / ('podcast-post-production-v' + data['version'] + '.zip')
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as handle:
         for rel in sorted(list(files) + ['package-manifest.json']):
             info = zipfile.ZipInfo('podcast-post-production/' + rel, date_time=(2026, 10, 17, 0, 0, 0))
@@ -43,7 +47,9 @@ def main():
             handle.writestr(info, (ROOT / rel).read_bytes())
     checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
     release = {**identity, 'archive': archive.name, 'archive_sha256': checksum,
-               'channel': 'beta', 'distribution': 'public-beta', 'public_distribution_ready': True, 'release_ready': False, 'human_full_review': 'NOT RUN'}
+               'channel': data['channel'], 'distribution': data['distribution'],
+               'public_distribution_ready': data['public_distribution_ready'],
+               'release_ready': False, 'human_full_review': 'NOT RUN'}
     (out / 'release.json').write_text(json.dumps(release, indent=2) + '\n', encoding='utf-8')
     (out / 'SHA256SUMS.txt').write_text(checksum + '  ' + archive.name + '\n', encoding='utf-8')
     print(json.dumps(release))

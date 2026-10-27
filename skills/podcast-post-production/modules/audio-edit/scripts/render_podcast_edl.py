@@ -204,6 +204,8 @@ def validate_deliveries(data, outputs):
 
 
 def validate_edl(data, review_copy=False):
+    if 'sources' in data and 'base' in data:
+        raise ValueError('Non-executable editorial plan; create an approved module-specific EDL')
     version = data.get("version", 1)
     if isinstance(version, bool) or not isinstance(version, int):
         raise ValueError("EDL version must be an integer")

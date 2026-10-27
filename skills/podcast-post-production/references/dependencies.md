@@ -1,6 +1,6 @@
 # 最小安装环境与执行前检查
 
-当前候选：0.2.0-rc.6.3-beta。最低声明、工具能力与通过验证的版本组合是不同信息；安装成功不能代替渲染和媒体 QA。
+当前候选：0.5.0-beta（本地 Beta 升级候选）。最低声明、工具能力与通过验证的版本组合是不同信息；安装成功不能代替渲染和媒体 QA。
 
 ## 最小资源
 
@@ -24,6 +24,7 @@ Python 3.10 是代码声明下限，尚未证明所有 Python/包版本组合兼
 
 | 模块 | feature | 需要 |
 |---|---|---|
+| editorial-plan | full / planning | 仅 Python 标准库；无 FFmpeg、云模型或媒体解码，采样范围来自已声明元数据 |
 | audio-edit | full / basic | full 加 NumPy；basic 只用标准库与 FFmpeg/FFprobe；MP3 libmp3lame、WAV pcm_s24le、loudnorm 等 |
 | video-conform | subtitles | 纯校对、数字检查与决定应用，仅标准库；本地复听页需浏览器访问127.0.0.1 |
 | video-conform | review-clips | 可选上下文音频片段：FFmpeg/FFprobe、libmp3lame，不要求NumPy/Pillow/字体 |

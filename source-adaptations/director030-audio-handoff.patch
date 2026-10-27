@@ -1,0 +1,14 @@
+diff --git a/modules/audio-edit/scripts/render_podcast_edl.py b/modules/audio-edit/scripts/render_podcast_edl.py
+index 84c2e37..17e1a1c 100755
+--- a/modules/audio-edit/scripts/render_podcast_edl.py
++++ b/modules/audio-edit/scripts/render_podcast_edl.py
+@@ -206,0 +207,2 @@ def validate_edl(data, review_copy=False):
++    if 'sources' in data and 'base' in data:
++        raise ValueError('Non-executable editorial plan; create an approved module-specific EDL')
+diff --git a/modules/audio-edit/workflow.md b/modules/audio-edit/workflow.md
+index 11e0d09..90c12be 100644
+--- a/modules/audio-edit/workflow.md
++++ b/modules/audio-edit/workflow.md
+@@ -44,0 +45,2 @@ Maintain the repository copy; installed copies are validated runtime copies.
++For a user-approved target-runtime or structural content plan, use [target-runtime handoff](references/target-runtime.md). This explicit branch permits only the confirmed macro losses; retained speech still follows integrity checks. Do not silently turn `rigorous-explainer` into a runtime-cutting branch. Plan-only requests route to [content planning](../editorial-plan/workflow.md), not this renderer.
++
