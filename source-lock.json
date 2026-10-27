@@ -470,5 +470,42 @@
       ],
       "scope": "full audio v1.7 with package guards/shared transport; subtitle opt-in changes only; remaining modules retain rc6.2 adapters"
     }
-  ]
+  ],
+  "director030_integration": {
+    "version": "0.3.0-beta",
+    "technical_id": "podcast-post-production",
+    "display_name": "剪辑导演（Beta）",
+    "maintenance_base_commit": "a8dbcaa37d7bdacc6e44d2dbb9ab9e827b01624a",
+    "baseline_runtime_tree_sha256": "dffcaab2ee3085beffea21686a4e3c19eb5dad0453122631e5a4669209935462",
+    "intake_candidate_tree_sha256": "8c300ded09aa8f5f427150a6e645d1941b466ac18a21e9f538a6efa9bbce3c76",
+    "intake_manifest_sha256": "2ea837ed09303e9bfddc7d4ec4429edd0b0c6b5d958513689caa58106511d04d",
+    "new_module": "editorial-plan",
+    "distribution": "local-development-candidate",
+    "published": false,
+    "installed": false,
+    "source_adapter": {
+      "patch": "source-adaptations/director030-audio-handoff.patch",
+      "patch_sha256": "7d33c5590a8f6c3f3d131e5e6b3e507272df6c74d647b9dedc5e409741027bb4",
+      "files": {
+        "skills/podcast-post-production/modules/audio-edit/workflow.md": {
+          "before_sha256": "96802a128be524dbd05bf9b818b97c437c8b79c3b05ef0a5c526851e270725b9",
+          "after_sha256": "9b81c41fdc1b6b0524a15b2fba28e27738738fa199f64e35a8e8c7599a34cb8b"
+        },
+        "skills/podcast-post-production/modules/audio-edit/scripts/render_podcast_edl.py": {
+          "before_sha256": "71a37a4041581da8417e4a4a983ae52d2c182345ae78e94b8807dfc164db5f0a",
+          "after_sha256": "4a80da4670fec8c1c6221d42082441b437137ba919c24cf3c317cdca8fe5b5cd"
+        }
+      },
+      "format": "zero-context patch applied only after exact base SHA-256 verification"
+    },
+    "historical_sources": "All earlier pinned commits, hashes, license records and adapters retained unchanged; this layer applies after rc63 adapters."
+  },
+  "director050_upgrade": {
+    "version": "0.5.0-beta",
+    "predecessor": "0.3.0-beta local integration",
+    "predecessor_zip_sha256": "f1667ed182cae2e3f419d275d7db75744593bb2d39647b5f4b5fd7a75e0fcac5",
+    "technical_id": "podcast-post-production",
+    "media_scripts_changed_from_030": false,
+    "published": false
+  }
 }

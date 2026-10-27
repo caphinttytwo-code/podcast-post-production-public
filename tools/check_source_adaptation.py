@@ -17,9 +17,20 @@ def main():
      relative=Path(row['runtime']).relative_to('skills/podcast-post-production');dest=root/relative;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(payload)
     patch=REPO/update['adapter']
     subprocess.run(['git','apply','--check',str(patch)],cwd=root,check=True);subprocess.run(['git','apply',str(patch)],cwd=root,check=True)
+    local=lock.get('director030_integration',{}).get('source_adapter',{}) if update['mode']=='audio-edit' else {}
+    for row in update['files']:
+     adapted=root/Path(row['runtime']).relative_to('skills/podcast-post-production')
+     if sha(adapted.read_bytes())!=row['runtime_sha256']:raise ValueError('Historical rc63 adapter mismatch: '+row['runtime'])
+    if local:
+     patch=REPO/local['patch']
+     if sha(patch.read_bytes())!=local['patch_sha256']:raise ValueError('Local adapter fingerprint mismatch')
+     for rel,values in local['files'].items():
+      if sha((root/Path(rel).relative_to('skills/podcast-post-production')).read_bytes())!=values['before_sha256']:raise ValueError('Local adapter base mismatch')
+     subprocess.run(['git','apply','--unidiff-zero','--check',str(patch)],cwd=root,check=True);subprocess.run(['git','apply','--unidiff-zero',str(patch)],cwd=root,check=True)
     for row in update['files']:
      actual=REPO/row['runtime'];adapted=root/Path(row['runtime']).relative_to('skills/podcast-post-production')
-     if sha(actual.read_bytes())!=row['runtime_sha256'] or actual.read_bytes()!=adapted.read_bytes():raise ValueError('Runtime adapter mismatch: '+row['runtime'])
+     expected=local.get('files',{}).get(row['runtime'],{}).get('after_sha256',row['runtime_sha256'])
+     if sha(actual.read_bytes())!=expected or actual.read_bytes()!=adapted.read_bytes():raise ValueError('Runtime adapter mismatch: '+row['runtime'])
    print(update['mode']+': bundled pinned source and rc63 adapter PASS')
  for row in lock['renderer_updates']+lock.get('asr_security_updates',[]):
   if row.get('superseded_by'):continue

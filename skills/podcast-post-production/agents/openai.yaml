@@ -1,4 +1,4 @@
 interface:
-  display_name: "播客音视频后期（Beta）"
-  short_description: "Beta 测试版：整合播客音频精剪、视频对版、片花包装、锁版精修与媒体审计，按需使用独立模块"
-  default_prompt: "使用 Beta 测试版 $podcast-post-production 处理这期播客后期，先识别任务模式、素材版本与授权范围，再按对应模块执行和验收。"
+  display_name: "剪辑导演（Beta）"
+  short_description: "长节目内容筛选与补录编排，衔接音频精剪、视频对版、片花、成片校准与项目审计。"
+  default_prompt: "使用剪辑导演 $podcast-post-production 处理这期节目的策划或后期，先核对目标、版本与授权范围，再进入相应分支；只出方案时不剪辑。"

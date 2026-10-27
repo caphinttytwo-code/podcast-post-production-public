@@ -1,5 +1,5 @@
 {
-  "candidate_version": "0.2.0-rc.6.3-beta",
+  "candidate_version": "0.5.0-beta",
   "modules": [
     {
       "mode": "audio-edit",
@@ -238,5 +238,37 @@
       "status": "upstream PR #4 OPEN / not merged",
       "scope": "subtitle enhancements only; conform renderer retains rc6.2 fixes"
     }
-  ]
+  ],
+  "local_030_derivation": {
+    "baseline_version": "0.2.0-rc.6.3-beta",
+    "baseline_tree_sha256": "dffcaab2ee3085beffea21686a4e3c19eb5dad0453122631e5a4669209935462",
+    "baseline_manifest_sha256": "c03232d02ae2c87264d0e67513eb94f73316819779e3374154dc7f037cdd5173",
+    "source_kind": "verified frozen runtime snapshot; not current upstream HEAD",
+    "new_module": "editorial-plan",
+    "published": false,
+    "installed": false,
+    "upstream_commit": null,
+    "maintenance_integration": {
+      "base_commit": "a8dbcaa37d7bdacc6e44d2dbb9ab9e827b01624a",
+      "runtime_baseline_matches_base_package": true,
+      "source_candidate_tree_sha256": "8c300ded09aa8f5f427150a6e645d1941b466ac18a21e9f538a6efa9bbce3c76",
+      "scope": "Incremental editorial planning integration; preserve original five-module pins, license and fixtures",
+      "local_boundary_fixes": [
+        "Kept move protects its original source range against competing structural removals",
+        "Planning-shaped input is rejected by legacy renderer even with malformed or missing planning schema version"
+      ],
+      "publication": "NOT RUN",
+      "installation": "NOT RUN",
+      "actual_host_routing": "NOT RUN"
+    }
+  },
+  "local_050_upgrade": {
+    "source_version": "0.3.0-beta",
+    "source_tree_sha256": "b3f39083e0a194f970107c0e58981a401b3c5e85d548c054dce9db6ac6185b31",
+    "source_zip_sha256": "f1667ed182cae2e3f419d275d7db75744593bb2d39647b5f4b5fd7a75e0fcac5",
+    "maintenance_base_commit": "a8dbcaa37d7bdacc6e44d2dbb9ab9e827b01624a",
+    "reason": "User requested a larger Beta version step while preserving technical ID and behavior",
+    "new_media_or_asr": false,
+    "published": false
+  }
 }

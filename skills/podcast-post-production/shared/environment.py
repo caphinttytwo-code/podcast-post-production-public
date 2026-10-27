@@ -13,6 +13,7 @@ from .fonts import font_path, load_font, check_glyphs
 
 
 FEATURES = {
+    'editorial-plan': ('full', 'planning'),
     'audio-edit': ('full', 'basic', 'paragraph-review', 'preserve-source', 'synchronized-multitrack'),
     'video-conform': ('full', 'subtitles', 'review-clips'),
     'trailers': ('full', 'images', 'subtitles', 'review'),
@@ -62,7 +63,7 @@ def profile(mode, feature):
     packages, tools, encoders, filters = {}, [], set(), set()
     images = mode == 'trailers' and feature in ('full', 'images', 'subtitles')
     review = mode == 'trailers' and feature == 'review'
-    pure = (mode == 'video-conform' and feature == 'subtitles') or (mode == 'locked-revision' and feature == 'subtitles') or (mode == 'project-audit' and feature == 'inventory')
+    pure = mode == 'editorial-plan' or (mode == 'video-conform' and feature == 'subtitles') or (mode == 'locked-revision' and feature == 'subtitles') or (mode == 'project-audit' and feature == 'inventory')
     if mode == 'audio-edit' and feature in ('preserve-source','synchronized-multitrack'):
         packages['numpy'] = ('numpy',(1,24,0))
     if images or review:

@@ -4,7 +4,7 @@ from .files import file_identity, outside_package, package_root
 from .package_identity import verify
 import json
 
-MODES = ('audio-edit', 'video-conform', 'trailers', 'locked-revision', 'project-audit')
+MODES = ('audio-edit', 'video-conform', 'trailers', 'locked-revision', 'project-audit', 'editorial-plan')
 TIMEBASES = ('source', 'reference', 'final', 'non-timed')
 
 

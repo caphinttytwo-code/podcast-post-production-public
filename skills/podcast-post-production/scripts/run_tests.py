@@ -43,6 +43,7 @@ def main():
                 feature='audio-edit:'+('synchronized-multitrack' if case.startswith('test_multitrack.') else 'paragraph-review' if case.startswith(('test_paragraph_review.','test_review_status.')) else 'preserve-source' if case.startswith('test_preserve_mode.') else 'full')
             elif name=='video-conform':feature='video-conform:subtitles'
             elif name in ('trailers','locked-revision','project-audit'):feature=name+':full'
+            elif name=='editorial-plan':feature='editorial-plan:planning'
             cases.append({'case':name+'/'+case,'feature':feature,'status':'PASS' if match[3]=='ok' else 'FAIL'})
         reports.append({'suite': name, 'tests': int(count.group(1)) if count else 0, 'exit_code': result.returncode, 'status':'PASS' if result.returncode==0 and 'skipped' not in log else 'FAIL', 'skipped': 'skipped' in log, 'log': name + '.txt','cases':cases})
     report = {'suites': reports, 'tests': sum(x['tests'] for x in reports), 'ok': all(x['exit_code'] == 0 and not x['skipped'] for x in reports)}

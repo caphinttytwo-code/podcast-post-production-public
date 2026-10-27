@@ -1,15 +1,15 @@
 ---
 name: podcast-post-production
-description: Beta testing version. Edit solo or synchronized equal-length multitrack podcast audio, conform full videos to edited audio, produce video trailers, revise approved video masters, or audit media projects. Use for 播客精剪、视频对版、片花、锁版精修 媒体项目审计、字幕续校、数字复听 and 字幕校对.
+description: 剪辑导演（Beta）：为长播客、访谈和圆桌制定内容筛选、目标时长与补录放置方案；也执行已确认的音频精剪、同步多轨装配、视频对版、片花包装、字幕局部修订及项目审计。只出方案、只修字幕/封面/接点或只清理时按对应分支处理，不自动扩大为整片重剪。
 metadata:
-  version: "0.2.0-rc.6.3-beta"
+  version: "0.5.0-beta"
 ---
 
-# 播客音视频后期 — Beta
+# 剪辑导演 — Beta
 
-This is **0.2.0-rc.6.3-beta Beta**, a public MIT-licensed Beta testing release. It is not a stable release.
+This is **0.5.0-beta**, a locally prepared, unpublished Beta upgrade candidate under the inherited MIT license. It is not a stable release; actual installation and activation status come from host-side reports. The technical Skill ID remains `podcast-post-production`; “播客音视频后期” is the prior display name.
 
-Choose the workflow for the user's actual requested output. This is a standalone five-module package; it does not require the former individual Skills to be installed.
+Choose the workflow for the user's actual requested output. This is a standalone six-module package; it does not require the former individual Skills to be installed. Existing project schemas, EDLs and module commands are retained. A local runtime profile remains bound to its exact package identity and requires revalidation before any future switch. For candidate lineage and handoff, read [local upgrade status](references/local-050-upgrade.md).
 
 For transcription, follow [ASR redirect and cache safety](references/asr-security.md). A redirect failure does not authorize a changed endpoint or retry upload.
 
@@ -23,6 +23,7 @@ Use [the bundled test plan](references/alpha-testing.md) and [host execution ins
 
 | Mode | Trigger and controlling input | Read next |
 |---|---|---|
+| `editorial-plan` | Long-program material maps, target-runtime selection, episode structure, rerecord placement or a summary of proposed choices. Plan-only by default; auditions require the requested/approved scope. | [Content planning](modules/editorial-plan/workflow.md) |
 | `audio-edit` | Audio-only solo editing (default), paragraph review, preserve-source PCM edits, or synchronized-multitrack editing/rerecord assembly. Different lengths/rates, offset or drift require external alignment first. | [Audio workflow](modules/audio-edit/workflow.md) |
 | `video-conform` | A complete edited audio reference determines the full video's content and duration; includes locked-final or proven same-timebase subtitle continuation and contextual proofreading. | [Conform workflow](modules/video-conform/workflow.md) |
 | `trailers` | Story selection, video clips, vertical packaging, covers, PIP, or a visual-only change. A selected talking-head excerpt does not require fresh story discovery. | [Trailer workflow](modules/trailers/workflow.md) |
@@ -30,6 +31,8 @@ Use [the bundled test plan](references/alpha-testing.md) and [host execution ins
 | `project-audit` | Explicit inventory, backup verification, quarantine or cleanup request for named project roots. | [Audit workflow](modules/project-audit/workflow.md) |
 
 Read only the selected module and its step-specific references. For a mixed request, identify the required modules and their handoff before execution. If source/reference versions or requested surfaces are ambiguous, inspect available records and clarify the unresolved choice.
+
+“剪辑导演” is an entrypoint, not authorization for a whole production. A plan may stop at text; a local fix may enter an existing execution module directly. Shared project indexes point to each module's authoritative evidence, not a replacement universal EDL.
 
 ## Shared boundaries
 
@@ -47,7 +50,7 @@ Resolve scripts relative to this package or the selected module; existing script
 
 - Before executing a module, read [minimum environment and installation requirements](references/dependencies.md), then run the task-specific check. Missing packages/fonts/codecs block only dependent steps; never auto-install global tools. Use a small synthetic smoke for a new environment; keep environment evidence outside the package. A version check alone does not certify production or human review.
 - For cross-module continuation or a unified evidence index, read [project index and handoff](references/project-index.md).
-- For this update, read [rc6.3 changes](references/rc63-changes.md) when reviewing compatibility or rollback.
+- For the inherited baseline, read [rc6.3 changes](references/rc63-changes.md); current local changes and handoff are in [local upgrade status](references/local-050-upgrade.md).
 - For migration lineage and retained license notices, read [provenance](references/provenance.json) and [NOTICE](NOTICE.md).
 
-This is an Beta candidate. Users may explicitly choose the bundled installer and tests. Development or a technical pass does not authorize switching existing installations, editing media, uploading, cleanup or publishing. Full human listening/viewing remains a separate project record.
+This is a Beta candidate. Users may explicitly choose the bundled installer and tests. Development or a technical pass does not authorize switching existing installations, editing media, uploading, cleanup or publishing. Full human listening/viewing remains a separate project record.

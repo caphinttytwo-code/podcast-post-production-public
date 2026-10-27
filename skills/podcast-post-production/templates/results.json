@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "0.2.0-rc.6.3-beta",
+  "version": "0.5.0-beta",
   "executor": null,
   "platform": null,
   "actual_model": {
@@ -19,5 +19,6 @@
   "published": false,
   "channel": "beta",
   "distribution": "public-beta",
-  "public_distribution_ready": true
+  "public_distribution_ready": true,
+  "public_distribution_blockers": []
 }
