@@ -19,6 +19,6 @@
   "published": false,
   "channel": "beta",
   "distribution": "public-beta",
-  "public_distribution_ready": false,
+  "public_distribution_ready": true,
   "public_distribution_blockers": []
 }

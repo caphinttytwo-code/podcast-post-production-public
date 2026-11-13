@@ -1,4 +1,6 @@
-# 剪辑导演 0.5.0-beta 本地升级
+# 剪辑导演 0.5.0-beta 本地升级（历史记录）
+
+以下为 0.5.0-beta 候选移交时的记录。0.6.0-beta 发行状态以 [GitHub Release](https://github.com/caphinttytwo-code/podcast-post-production-public/releases/tag/v0.6.0-beta) 为准。
 
 用户要求较大的版本跨度，因此由未发布的 0.3.0-beta 整合候选提升为 0.5.0-beta；未声称曾发布中间版本，也不是稳定版。技术 ID、目录名和 $podcast-post-production 调用保持，显示名为“剪辑导演（Beta）”。
 

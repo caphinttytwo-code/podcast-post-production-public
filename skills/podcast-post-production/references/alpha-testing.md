@@ -15,7 +15,7 @@
 
 本轮固定来源兼容修复及适配差异在 `tests/resources/rc5-source-updates.zip`，其为离线数据，解压到包外查看；原回归冻结来源另见 `frozen-sources.zip`。本地开发验收范围见 [release-validation.md](release-validation.md)。
 
-本包为 **0.6.0-beta 本地开发候选**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。
+本包为 **0.6.0-beta 公开预发布版**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。
 
 ## rc6.3 test inventory and status rules
 

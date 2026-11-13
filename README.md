@@ -1,20 +1,15 @@
-# 剪辑导演（Beta）— 0.6.0-beta 维护候选
+# 剪辑导演（Beta）
 
-技术 ID 为 `podcast-post-production`。基线为已公开的 [0.5.0-beta](https://github.com/caphinttytwo-code/podcast-post-production-public/releases/tag/v0.5.0-beta)。本机安装状态以宿主报告为准。
+剪辑导演是面向长播客、访谈和圆桌的内容策划与音视频后期 Skill，技术 ID 为 `podcast-post-production`。它支持长节目内容取舍、目标时长与补录编排、音频精剪与同步多轨、完整视频对版、片花包装、锁版修订和项目盘点。
 
-[Skill 入口](skills/podcast-post-production/SKILL.md)新增长节目内容筛选、目标时长取舍、补录编排与决策总结；保留原五执行模块、旧项目格式与命令。策划默认到方案为止，具体内容损失及 whole/fine 范围确认后才移交已有执行器。
+**[下载 0.6.0-beta 公开预发布版](https://github.com/caphinttytwo-code/podcast-post-production-public/releases/tag/v0.6.0-beta)**
 
-- 当前来源及维护增量：[source-lock.json](source-lock.json)、[本地接续说明](skills/podcast-post-production/references/local-050-upgrade.md)。原许可及历史来源记录保留。
-- 原 rc6.3 基线仍在 [PR #1](https://github.com/caphinttytwo-code/podcast-post-production-public/pull/1)；本轮不修改该远程 PR，不合并字幕源 PR。
-- 已发布 rc6.2 的[固定 Release](https://github.com/caphinttytwo-code/podcast-post-production-public/releases/tag/v0.2.0-rc.6.2-beta)及仓库既有候选 ZIP 不覆盖。
-- 本轮整合变更与实际本地验证摘要：[validation/director030-integration.md](validation/director030-integration.md)。完整原始日志、合成产物及本机路径保留在包外私有审计，不混入发行包。
+下载 Release 的完整 ZIP 和 SHA-256 清单。包内提供环境检测、安装、快速和完整合成测试及费用说明。媒体制作要求配对 FFmpeg／FFprobe 最低 8.1.1。纯策划可使用 Python 标准库，其他依赖按所选功能检查。
 
-安装检测、API/费用提示、包内完整测试和手动 Actions 工作流保留。纯策划使用 Python 标准库；媒体模块最低要求仍为配对 FFmpeg/FFprobe 8.1.1，另需所选能力的依赖、滤镜及字体。实际资源与模型权益分别核验，安装检测不调用模型、不上传、不试扣费。
+0.6.0-beta 加入原声 PCM 二次精剪续作、锁版精确保留区验证、统一转写缓存及费用账本，以及 macOS 宿主升级后的环境复验。真实转写另需具体上传和费用授权。
 
-本轮只形成可审阅本地结果。GitHub 更新、版本发布、运行版部署和整理须用户确认具体对象与范围；永久删除另行确认。测试通过、人工完整审听/审看与实际宿主路由分别记录。
+- [Skill 入口](skills/podcast-post-production/SKILL.md) · [安装说明](skills/podcast-post-production/references/alpha-installation.md)
+- [0.6.0-beta 验收摘要](validation/director060.md) · [发行身份](validation/director060-release.json)
+- [来源与适配](source-lock.json) · [来源许可](skills/podcast-post-production/NOTICE.md) · [MIT](LICENSE)
 
-0.5.0-beta 是按用户要求由 0.3 本地整合跨版本升级；原 0.3 验证摘要为历史资料。本轮验证与最终隐私/来源审计另见 validation/director050-upgrade.md；它们不生成远程发布授权。
-
-0.6.0-beta 维护候选统一转写路由与项目费用账本。macOS 已绑定安装的复验工具位于 `skills/podcast-post-production/scripts/revalidate_runtime.py`。
-
-0.6.0-beta 基于已通过隔离验收的 0.5.1-beta 增加原声 PCM 续作和锁版精确校验。
+项目报告、缓存和素材保存在包外。完整人工审听／审看按项目单独记录。

@@ -53,4 +53,4 @@ Resolve scripts relative to this package or the selected module; existing script
 - For the inherited baseline, read [rc6.3 changes](references/rc63-changes.md); current local changes and handoff are in [local upgrade status](references/local-050-upgrade.md).
 - For migration lineage and retained license notices, read [provenance](references/provenance.json) and [NOTICE](NOTICE.md).
 
-This is a Beta candidate. Users may explicitly choose the bundled installer and tests. Development or a technical pass does not authorize switching existing installations, editing media, uploading, cleanup or publishing. Full human listening/viewing remains a separate project record.
+This is a public Beta prerelease. Users may explicitly choose the bundled installer and tests. Development or a technical pass does not authorize switching existing installations, editing media, uploading, cleanup or publishing. Full human listening/viewing remains a separate project record.
