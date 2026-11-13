@@ -37,6 +37,7 @@ def main():
             codes.append(result.returncode)
             logs.append({'command': command, 'exit_code': result.returncode, 'log': name})
         approved = {
+            ('locked-revision','scripts/validate_locked_revision.py'): {'--ffmpeg'},
             ('video-conform','scripts/validate_srt.py'): {'--profile','--max-lines','--max-screen-chars','--numeric-style','--format-exceptions'},
             ('audio-edit','scripts/render_podcast_edl.py'): {'--review-copy'},
             ('audio-edit','scripts/audio_qa.py'): {'--profile','--assembly-map','--source','--edl'},

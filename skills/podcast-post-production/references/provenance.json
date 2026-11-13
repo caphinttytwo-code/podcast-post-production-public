@@ -1,5 +1,5 @@
 {
-  "candidate_version": "0.5.1-beta",
+  "candidate_version": "0.6.0-beta",
   "modules": [
     {
       "mode": "audio-edit",

@@ -17,7 +17,7 @@ Make the smallest explicitly requested change to an approved master and prove wh
 2. Confirm complete words, breaths, and frame boundaries around every edit. ASR timestamps are candidate locations, not edit boundaries.
 3. Render only the authorized change into a new version path. Preserve original speed, geometry, audio ordering and defaults unless explicitly unlocked.
 4. Use `scripts/retime_srt.py` for deletions whose subtitle cues do not cross an edit boundary. Manually resolve and document boundary-crossing cues before retrying.
-5. Use `scripts/validate_locked_revision.py` to compare the parent and output against the revision manifest and write a QA report.
+5. Use `scripts/validate_locked_revision.py` to compare the parent and output against the revision manifest and write a QA report. Use schema 2 when exact protected picture and per-track audio evidence is required.
 6. Generate a Review only when requested or after the master passes technical QA. Keep `release_ready=false` until full human viewing, listening, and subtitle proofread are recorded.
 
 ## Boundaries

@@ -118,14 +118,16 @@ def main() -> int:
     parser.add_argument("manifest", type=Path)
     parser.add_argument("--report", required=True, type=Path)
     parser.add_argument("--ffprobe", default="ffprobe")
+    parser.add_argument("--ffmpeg", default="ffmpeg")
     args = parser.parse_args()
     protect_output_args(args)
     manifest_path = args.manifest.resolve()
     base = manifest_path.parent
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     errors = []
-    if manifest.get("schema_version") != 1:
-        errors.append("schema_version must be 1")
+    version = manifest.get("schema_version")
+    if type(version) is not int or version not in (1, 2):
+        errors.append("schema_version must be 1 or 2")
     source, output = resolved(base, manifest["source"]), resolved(base, manifest["output"])
     if source == output:
         errors.append("source and output must differ")
@@ -133,33 +135,65 @@ def main() -> int:
         if not path.is_file():
             errors.append(f"missing {label}: {path}")
     source_probe = output_probe = None
+    source_hash = output_hash = None
+    probe_blocker = None
     if source.is_file() and output.is_file():
         source_hash = sha256(source)
+        output_hash = sha256(output)
         expected_hash = manifest.get("source_sha256")
         if expected_hash and source_hash != expected_hash:
             errors.append("source SHA-256 does not match manifest")
-        source_probe, output_probe = probe(source, args.ffprobe), probe(output, args.ffprobe)
-        errors.extend(validate_metadata(manifest, source_probe, output_probe))
+        try:
+            source_probe, output_probe = probe(source, args.ffprobe), probe(output, args.ffprobe)
+            errors.extend(validate_metadata(manifest, source_probe, output_probe))
+        except (OSError, RuntimeError, ValueError, KeyError, TypeError) as exc:
+            if version != 2:
+                raise
+            probe_blocker = str(exc)
     output_subtitle = manifest.get("output_subtitle")
-    distinct_output(args.report, source, output, *([resolved(base, output_subtitle)] if output_subtitle else []))
+    subtitles = [resolved(base, manifest[key]) for key in ("source_subtitle", "output_subtitle") if manifest.get(key)]
+    distinct_output(args.report, source, output, *subtitles)
     if output_subtitle and output_probe:
         subtitle_path = resolved(base, output_subtitle)
         if not subtitle_path.is_file():
             errors.append(f"missing output subtitle: {subtitle_path}")
         else:
             errors.extend(validate_srt_end(subtitle_path, output_probe["duration"]))
+    exact = {"status": "NOT RUN"}
+    if version == 2 and not errors:
+        from locked_evidence import check
+        if probe_blocker:
+            exact = {"status": "BLOCKED", "reason": probe_blocker}
+        elif not expected_hash:
+            exact = {"status": "BLOCKED", "reason": "Schema 2 requires the approved parent SHA-256"}
+        else:
+            try:
+                exact = check(manifest, source, output, args.ffprobe, args.ffmpeg)
+                if exact["status"] == "PASS":
+                    decode = subprocess.run([args.ffmpeg, "-nostdin", "-v", "error", "-xerror",
+                                             "-i", str(output), "-map", "0:v", "-map", "0:a?",
+                                             "-f", "null", "-"], capture_output=True, text=True)
+                    exact["complete_av_decode"] = decode.returncode == 0
+                    if decode.returncode:
+                        exact.update(status="FAIL", decode_error=decode.stderr[-1500:])
+            except (OSError, KeyError, ValueError, TypeError, ZeroDivisionError) as exc:
+                exact = {"status": "BLOCKED", "reason": str(exc)}
+    if version == 2 and source_hash and (sha256(source) != source_hash or sha256(output) != output_hash):
+        exact = {"status": "BLOCKED", "reason": "Source or output changed during validation"}
+    status = "FAIL" if errors or exact["status"] == "FAIL" else exact["status"] if version == 2 else "PASS"
     report = {
-        "id": manifest.get("id"), "ok": not errors, "errors": errors,
-        "source": str(source), "source_sha256": sha256(source) if source.is_file() else None,
-        "output": str(output), "output_sha256": sha256(output) if output.is_file() else None,
+        "id": manifest.get("id"), "ok": status == "PASS", "errors": errors,
+        "status": status, "exact_preservation": exact,
+        "source": str(source), "source_sha256": source_hash,
+        "output": str(output), "output_sha256": output_hash,
         "source_probe": source_probe, "output_probe": output_probe,
-        "technical_qa": "pass" if not errors else "fail",
+        "technical_qa": status.lower(),
         "human_full_review": "not_recorded", "release_ready": False,
     }
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"ok": report["ok"], "errors": len(errors)}, ensure_ascii=False))
-    return 1 if errors else 0
+    return 0 if report["ok"] else 2 if status == "BLOCKED" else 1
 
 
 if __name__ == "__main__":

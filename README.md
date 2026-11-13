@@ -1,4 +1,4 @@
-# 剪辑导演（Beta）— 0.5.1-beta 维护候选
+# 剪辑导演（Beta）— 0.6.0-beta 维护候选
 
 技术 ID 为 `podcast-post-production`。基线为已公开的 [0.5.0-beta](https://github.com/caphinttytwo-code/podcast-post-production-public/releases/tag/v0.5.0-beta)。本机安装状态以宿主报告为准。
 
@@ -15,4 +15,6 @@
 
 0.5.0-beta 是按用户要求由 0.3 本地整合跨版本升级；原 0.3 验证摘要为历史资料。本轮验证与最终隐私/来源审计另见 validation/director050-upgrade.md；它们不生成远程发布授权。
 
-0.5.1-beta 维护候选统一转写路由与项目费用账本。macOS 已绑定安装的复验工具位于 `skills/podcast-post-production/scripts/revalidate_runtime.py`。
+0.6.0-beta 维护候选统一转写路由与项目费用账本。macOS 已绑定安装的复验工具位于 `skills/podcast-post-production/scripts/revalidate_runtime.py`。
+
+0.6.0-beta 基于已通过隔离验收的 0.5.1-beta 增加原声 PCM 续作和锁版精确校验。
