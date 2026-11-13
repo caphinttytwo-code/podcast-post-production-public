@@ -58,7 +58,7 @@ Read [reference-edit-learning.md](reference-edit-learning.md) before using a hum
 
 ## StepFun and Content QA
 
-1. Use `stepaudio-2.5-asr` for every compared version.
+1. Use the same approved model and parameters for every compared version; follow [shared ASR routing](../../../references/asr-routing.md).
 2. If a five-minute chunk is risk-blocked, split that chunk into about one-minute proxies and retry while retaining all successful caches.
 3. If a smaller proxy remains blocked, preserve the corresponding source content, record the exact gap, and do not infer its words from surrounding context.
 4. After rendering, transcribe the candidate and compare it with the selected reference or approved transcript.

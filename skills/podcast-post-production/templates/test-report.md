@@ -1,6 +1,6 @@
-# 剪辑导演 0.5.0-beta — Beta 本地候选测试报告
+# 剪辑导演 0.5.1-beta — Beta 本地候选测试报告
 
-版本：0.5.0-beta；渠道：Beta；distribution=public-beta；public_distribution_ready=true（技术就绪，发布仍需用户确认）。
+版本：0.5.1-beta；渠道：Beta；distribution=public-beta；public_distribution_ready=false（待分发审阅）。
 
 填写本轮执行器、解释器及工具路径/指纹、开始和结束包身份、受保护输入前后哈希。原始日志位于包外，引用本轮实际文件，不沿用旧版通过数量。
 

@@ -51,7 +51,8 @@ def external_services():
         'local': {'network': False, 'model_api_fee': False,
                   'note': '本地制作、有效缓存复用及合成测试不调用模型 API；宿主费用另计。'},
         'new_transcription': {
-            'provider': 'StepFun', 'default_model': 'stepaudio-2.5-asr',
+            'provider': 'PROJECT OR HOST SELECTION REQUIRED', 'default_model': None,
+            'supported_routes': ['bailian-cli', 'stepfun'],
             'configured_environment_key': configured, 'keychain': 'NOT CHECKED',
             'network_required': True, 'audio_upload': True,
             'billing': '可能计费或消耗套餐额度；当前账号与此模型的计费规则 UNKNOWN',
@@ -66,7 +67,7 @@ def external_services():
                                      '可计算的费用估计或明确未知', '对应用户授权'],
         },
         'new_role_transcription': {
-            'provider':'Aliyun Bailian / DashScope', 'suggested_model':'qwen-audio-3.1-asr-flash-filetrans',
+            'provider':'Aliyun Bailian / DashScope', 'applies_to':'solo, multitrack and subtitles when selected', 'suggested_model':'qwen-audio-3.1-asr-flash-filetrans',
             'entrypoint':'bl speech recognize', 'cli_path':shutil.which('bl'),
             'cli_parameter_support':'NOT VERIFIED', 'account_permission':'NOT VERIFIED', 'region':'UNKNOWN',
             'quota':'NOT VERIFIED', 'price':'UNKNOWN', 'estimated_cost':'UNKNOWN',

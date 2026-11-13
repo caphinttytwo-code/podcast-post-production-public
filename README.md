@@ -1,6 +1,6 @@
-# 剪辑导演（Beta）— 0.5.0-beta 本地升级候选
+# 剪辑导演（Beta）— 0.5.1-beta 维护候选
 
-技术 ID 继续为 `podcast-post-production`。本地准备、未推送、未发布；运行状态由本机部署报告记录。当前仓库可见性保持既有公开设置。此目录是现有维护仓库的隔离分支，基于 `a8dbcaa37d7bdacc6e44d2dbb9ab9e827b01624a`，不是新建远程仓库。
+技术 ID 为 `podcast-post-production`。基线为已公开的 [0.5.0-beta](https://github.com/caphinttytwo-code/podcast-post-production-public/releases/tag/v0.5.0-beta)。本机安装状态以宿主报告为准。
 
 [Skill 入口](skills/podcast-post-production/SKILL.md)新增长节目内容筛选、目标时长取舍、补录编排与决策总结；保留原五执行模块、旧项目格式与命令。策划默认到方案为止，具体内容损失及 whole/fine 范围确认后才移交已有执行器。
 
@@ -14,3 +14,5 @@
 本轮只形成可审阅本地结果。GitHub 更新、版本发布、运行版部署和整理须用户确认具体对象与范围；永久删除另行确认。测试通过、人工完整审听/审看与实际宿主路由分别记录。
 
 0.5.0-beta 是按用户要求由 0.3 本地整合跨版本升级；原 0.3 验证摘要为历史资料。本轮验证与最终隐私/来源审计另见 validation/director050-upgrade.md；它们不生成远程发布授权。
+
+0.5.1-beta 维护候选统一转写路由与项目费用账本。macOS 已绑定安装的复验工具位于 `skills/podcast-post-production/scripts/revalidate_runtime.py`。

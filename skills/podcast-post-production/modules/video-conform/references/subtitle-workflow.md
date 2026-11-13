@@ -7,17 +7,17 @@ Use this workflow after the approved final timeline is locked, including continu
 - Search the project and final-video directory for SRT, VTT, ASS, transcripts, timecoded ASR JSON, terminology and listening decisions before transcribing. Record the baseline hash, locked timebase, already-proofread range, editable range and chosen style. Reuse complete compatible caches and approved wording. Do not retranscribe a complete recording solely because proofreading resumes; obtain new results only for missing/unreliable material, or the range explicitly requested for renewed cross-validation.
 - Probe the selected final media's exact duration and audio stream. Extract the format required by the selected ASR only if a new call is needed. Preserve the original audio.
 - Keep raw text, provider responses, chunks, alignment data, and QA logs under `work/subtitles-vNN/`; keep them out of `delivery/`.
-- Use `https://api.stepfun.com/step_plan/v1` as the single StepFun API base. Derive synchronous and asynchronous ASR paths from it and override only through `STEPFUN_API_BASE_URL`.
+- For StepFun, select the authorized billing endpoint using shared routing and set `STEPFUN_API_BASE_URL` where needed. Derive the synchronous and asynchronous paths from that base and confirm the chosen model is available there.
 - Resolve credentials in this order: macOS Keychain service `STEPFUN_API_KEY`, environment `STEPFUN_API_KEY`, then `STEP_API_KEY`. Never print or persist a raw key.
 - If the preferred provider is unavailable, stop before switching to a local or different cloud ASR. Obtain user approval for the fallback and disclose its resource/privacy impact.
 
 ## 2. Obtain text and timestamps
 
-For Chinese, use `stepaudio-2.5-asr` for the main text with language `zh` and ITN enabled. Treat its HTTP/SSE text as text only when returned timestamps are all zero or incomplete.
+For Chinese, select main transcription and review through [shared ASR routing](../../../references/asr-routing.md). These StepFun instructions apply only when that provider is selected. Treat its HTTP/SSE text as text only when returned timestamps are all zero or incomplete.
 
 Use a timestamp source that returns real utterance or word boundaries:
 
-1. Prefer StepFun asynchronous file ASR with `step-asr-1.1` and `show_utterances=true`.
+1. When StepFun is selected and the timestamp model and upload are authorized, use asynchronous file ASR with `step-asr-1.1` and `show_utterances=true`.
 2. Supply 16 kHz mono MP3/WAV under the provider's size limit through a private or temporary HTTPS URL. Expose only the intended audio. Keep the URL alive until the ASR task reaches a terminal state; an initial GET does not prove the provider will not download again after queueing.
 3. Close the tunnel immediately after all tasks finish. Delete any explicitly created provider file object when authorized.
 4. Treat `PENDING`, `QUEUED`, `SUBMITTED`, and `RUNNING` as non-terminal. Treat a response with results as success. Preserve the exact error stage and message on failure.

@@ -28,7 +28,7 @@ Maintain the repository copy; installed copies are validated runtime copies.
    - editorial branch: `casual-non-rigorous` or `rigorous-explainer`;
    - delivery: MP3, WAV, or both.
 4. Do not repeat a question the user already answered. Record explicit choices in the plan, project brief, EDL, and edit notes.
-5. The plan must state the source and reference roles, job type, branch, StepFun ASR scope, staged-transcript workflow, delivery formats and sound profile, exclusions, planned artifacts, editorial and technical QA, and human-listen gate. Identify a ChatCut export as `chatcut_reference`, not `human_reference`, unless a human explicitly made and approved the timeline decisions. When learning is requested, also record whether content, pacing, or both are confirmed and whether the result is project-only, reusable, or a named branch's personal default.
+5. The plan must state the source and reference roles, job type, branch, ASR provider and scope, staged-transcript workflow, delivery formats and sound profile, exclusions, planned artifacts, editorial and technical QA, and human-listen gate. Identify a ChatCut export as `chatcut_reference`, not `human_reference`, unless a human explicitly made and approved the timeline decisions. When learning is requested, also record whether content, pacing, or both are confirmed and whether the result is project-only, reusable, or a named branch's personal default.
 6. Treat plan confirmation as authorization only for the stated workflow. Platform publishing, account actions, and newly discovered scope still require separate authority.
 
 ## Select Recording Mode
@@ -38,7 +38,7 @@ Maintain the repository copy; installed copies are validated runtime copies.
 - Different decoded frame counts/rates, detected offset/drift or insufficient synchronization evidence stop this mode with a strong unsupported/waiting-for-evidence report. Do not pad, independently trim, stretch, resample or silently fall back to per-track solo editing.
 - Share content reasoning, approved-only execution and review recovery with solo editing. Preserve speaker questions, answers, references and overlaps; silence on one stem is not silence in the conversation. Whole-block rerecord moves and fine edits have separate authorization. Buffer length is project-specific, not universally 0.5 seconds.
 - Multitrack defaults to `preserve_source_no_mastering`. Never independently normalize the stems. One integer-frame timeline drives all stems and the Mix; a generated listening Mix is labelled and cannot serve as independent alignment evidence.
-- For ASR, reuse hash-matching caches first. Role transcription defaults to Qwen FileTrans through the installed Bailian CLI skill, subject to the user's current provider, region, allowance and budget instructions. Solo ASR retains its existing StepFun route. Dual ASR and local alternative-model checks are optional, scoped and costed, not mandatory full reruns. Follow [multitrack ASR and cost boundaries](references/synchronized-multitrack.md#asr-and-cost-boundaries); do not hard-code historical balances or expiry dates.
+- For ASR, reuse matching caches and use [shared ASR routing](../../references/asr-routing.md) for all recording modes. Dual ASR and local alternative-model checks are optional, scoped and costed, not mandatory full reruns. Follow [multitrack ASR and cost boundaries](references/synchronized-multitrack.md#asr-and-cost-boundaries); do not hard-code historical balances or expiry dates.
 
 ## Route the Editorial Branch
 
@@ -79,3 +79,5 @@ Resolve `scripts/`, `references/`, and `assets/` relative to this module. Keep a
 Choose `solo` by default; `synchronized-multitrack` stays inside audio-edit and retains its own project/plan schemas and integer-frame timebase.
 The installer reports `paragraph-review`, `preserve-source`, and `synchronized-multitrack` separately. `audio-edit:full` still describes the solo chain, and is not multitrack verification.
 For standard media production the integration supports paired FFmpeg/FFprobe >=8.1.1; filter-file probing does not reduce this minimum.
+
+Before new transcription, follow [shared ASR routing and ledger](../../references/asr-routing.md).

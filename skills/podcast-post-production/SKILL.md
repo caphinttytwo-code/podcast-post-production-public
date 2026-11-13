@@ -2,16 +2,16 @@
 name: podcast-post-production
 description: 剪辑导演（Beta）：为长播客、访谈和圆桌制定内容筛选、目标时长与补录放置方案；也执行已确认的音频精剪、同步多轨装配、视频对版、片花包装、字幕局部修订及项目审计。只出方案、只修字幕/封面/接点或只清理时按对应分支处理，不自动扩大为整片重剪。
 metadata:
-  version: "0.5.0-beta"
+  version: "0.5.1-beta"
 ---
 
 # 剪辑导演 — Beta
 
-This is **0.5.0-beta**, a locally prepared, unpublished Beta upgrade candidate under the inherited MIT license. It is not a stable release; actual installation and activation status come from host-side reports. The technical Skill ID remains `podcast-post-production`; “播客音视频后期” is the prior display name.
+This is **0.5.1-beta**, a Beta under the inherited MIT license. It is not a stable release; actual installation and activation status come from host-side reports. The technical Skill ID remains `podcast-post-production`; “播客音视频后期” is the prior display name.
 
 Choose the workflow for the user's actual requested output. This is a standalone six-module package; it does not require the former individual Skills to be installed. Existing project schemas, EDLs and module commands are retained. A local runtime profile remains bound to its exact package identity and requires revalidation before any future switch. For candidate lineage and handoff, read [local upgrade status](references/local-050-upgrade.md).
 
-For transcription, follow [ASR redirect and cache safety](references/asr-security.md). A redirect failure does not authorize a changed endpoint or retry upload.
+For solo, multitrack and subtitle transcription, use [shared ASR routing and ledger](references/asr-routing.md) and [ASR redirect and cache safety](references/asr-security.md). A redirect failure does not authorize a changed endpoint or retry upload.
 
 ## Beta first use and environment changes
 

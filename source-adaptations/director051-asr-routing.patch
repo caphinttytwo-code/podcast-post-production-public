@@ -1,0 +1,111 @@
+diff --git a/modules/audio-edit/references/production-workflow.md b/modules/audio-edit/references/production-workflow.md
+index 9e04f72..5e92bc9 100644
+--- a/modules/audio-edit/references/production-workflow.md
++++ b/modules/audio-edit/references/production-workflow.md
+@@ -49,7 +49,7 @@ For exact source-sample proxy manifests, cache binding and legacy timing limits,
+ - Run `scripts/transcribe_stepfun.py CHUNKS OUTPUT --dry-run`, inspect order and offsets, then run without `--dry-run`.
+ - Use `https://api.stepfun.com/step_plan/v1` as the single StepFun API base; derive service-specific paths from it. Override the base only through `STEPFUN_API_BASE_URL` or `--api-base-url`.
+ - Read credentials from `STEPFUN_API_KEY`, then macOS Keychain service `STEPFUN_API_KEY`. Never print the key.
+-- Use `stepaudio-2.5-asr` by default for Chinese speech. Add only verified names and domain terms as hotwords.
++- Use [shared ASR routing](../../../references/asr-routing.md) to select the provider and reuse matching caches. Add only verified names and domain terms as hotwords.
+ - Review the transcript and waveform together. Treat ASR timecodes as edit guides, not unquestionable acoustic boundaries.
+ - If StepFun risk-blocks a five-minute chunk, preserve caches, split only that chunk into about one-minute proxies, and retry. If smaller chunks remain blocked, keep the affected source content, record the gap, and do not guess or silently substitute another ASR.
+ 
+@@ -132,7 +132,7 @@ python3 scripts/render_podcast_edl.py SOURCE EDL episode-vNN.mp3 \
+ 
+ ### 7. Generate the post-edit transcript and perform editorial checks
+ 
+-- Chunk and transcribe the rendered candidate with the same StepAudio model and settings used for the source. Store it under `work/transcript/post-edit-vNN/`.
++- Chunk and transcribe the rendered candidate with the same approved model and settings used for the source. Store it under `work/transcript/post-edit-vNN/`.
+ - Treat this transcript as evidence of what listeners actually receive, not as a regenerated source of edit decisions.
+ - Complete four editorial checks against the rendered audio and post-edit transcript:
+   - sentence integrity: no fragments, missing subjects, broken causality, or clipped word onsets;
+diff --git a/modules/audio-edit/references/rigorous-explainer.md b/modules/audio-edit/references/rigorous-explainer.md
+index 78aa6d2..7ccf86c 100644
+--- a/modules/audio-edit/references/rigorous-explainer.md
++++ b/modules/audio-edit/references/rigorous-explainer.md
+@@ -58,7 +58,7 @@ Read [reference-edit-learning.md](reference-edit-learning.md) before using a hum
+ 
+ ## StepFun and Content QA
+ 
+-1. Use `stepaudio-2.5-asr` for every compared version.
++1. Use the same approved model and parameters for every compared version; follow [shared ASR routing](../../../references/asr-routing.md).
+ 2. If a five-minute chunk is risk-blocked, split that chunk into about one-minute proxies and retry while retaining all successful caches.
+ 3. If a smaller proxy remains blocked, preserve the corresponding source content, record the exact gap, and do not infer its words from surrounding context.
+ 4. After rendering, transcribe the candidate and compare it with the selected reference or approved transcript.
+diff --git a/modules/audio-edit/references/synchronized-multitrack.md b/modules/audio-edit/references/synchronized-multitrack.md
+index e720723..15cd817 100644
+--- a/modules/audio-edit/references/synchronized-multitrack.md
++++ b/modules/audio-edit/references/synchronized-multitrack.md
+@@ -124,7 +124,7 @@ Follow the existing full-human-listen gate. The tool does not certify subjective
+ 
+ Reuse complete source-hash-matching caches first. For new role transcripts, prefer `qwen-audio-3.1-asr-flash-filetrans` through the installed Bailian skills and `bl speech recognize`; check current CLI support, region, live allowance and task budget first. A model's presence in a catalog does not prove every parameter is exposed. Do not extract DashScope keys or silently switch to native API; a capability gap follows the user's existing native-API confirmation rule.
+ 
+-Clear solo speech continues to use StepFun 2.5. Check actual Plan validity; do not switch to its pay-as-you-go endpoint early because of an error or an ambiguous expiry timezone. After confirmed expiry follow the user's authorized pay-as-you-go route without renewing a subscription merely for ASR. For ambiguous/professional/overlapping content, use an authorized alternative model or StepFun 3 Max on local segments; default 3 Max review scope is at most 10% of original duration. Whole-file dual runs or expanded scope need project justification and authorization. Retry only failed segments; do not silently upgrade providers/models/billing routes.
++For solo, multitrack and subtitle routing follow [the shared route and cost ledger](../../../references/asr-routing.md). If StepFun 2.5 is selected, check actual Plan validity; do not switch to its pay-as-you-go endpoint early because of an error or an ambiguous expiry timezone. After confirmed expiry follow the user's authorized pay-as-you-go route without renewing a subscription merely for ASR. For ambiguous/professional/overlapping content, use an authorized alternative model or StepFun 3 Max on local segments; default 3 Max review scope is at most 10% of original duration. Whole-file dual runs or expanded scope need project justification and authorization. Retry only failed segments; do not silently upgrade providers/models/billing routes.
+ 
+ Before an authorized paid batch, show task estimation and remaining-budget evidence under the user's current global policy. Historical free-token counts, prices, budget plans and expiry snapshots are not live balances, hard billing caps or automatic monitors. Missing bills are unknown, not zero cost. Follow an explicitly configured user ASR budget, if any; reconcile known bills, outstanding estimates and unknowns across projects before assuming budget remains. Never call ASR merely to exhaust credits or measure costs.
+ 
+diff --git a/modules/audio-edit/workflow.md b/modules/audio-edit/workflow.md
+index 90c12be..2392c73 100644
+--- a/modules/audio-edit/workflow.md
++++ b/modules/audio-edit/workflow.md
+@@ -28,7 +28,7 @@ Maintain the repository copy; installed copies are validated runtime copies.
+    - editorial branch: `casual-non-rigorous` or `rigorous-explainer`;
+    - delivery: MP3, WAV, or both.
+ 4. Do not repeat a question the user already answered. Record explicit choices in the plan, project brief, EDL, and edit notes.
+-5. The plan must state the source and reference roles, job type, branch, StepFun ASR scope, staged-transcript workflow, delivery formats and sound profile, exclusions, planned artifacts, editorial and technical QA, and human-listen gate. Identify a ChatCut export as `chatcut_reference`, not `human_reference`, unless a human explicitly made and approved the timeline decisions. When learning is requested, also record whether content, pacing, or both are confirmed and whether the result is project-only, reusable, or a named branch's personal default.
++5. The plan must state the source and reference roles, job type, branch, ASR provider and scope, staged-transcript workflow, delivery formats and sound profile, exclusions, planned artifacts, editorial and technical QA, and human-listen gate. Identify a ChatCut export as `chatcut_reference`, not `human_reference`, unless a human explicitly made and approved the timeline decisions. When learning is requested, also record whether content, pacing, or both are confirmed and whether the result is project-only, reusable, or a named branch's personal default.
+ 6. Treat plan confirmation as authorization only for the stated workflow. Platform publishing, account actions, and newly discovered scope still require separate authority.
+ 
+ ## Select Recording Mode
+@@ -38,7 +38,7 @@ Maintain the repository copy; installed copies are validated runtime copies.
+ - Different decoded frame counts/rates, detected offset/drift or insufficient synchronization evidence stop this mode with a strong unsupported/waiting-for-evidence report. Do not pad, independently trim, stretch, resample or silently fall back to per-track solo editing.
+ - Share content reasoning, approved-only execution and review recovery with solo editing. Preserve speaker questions, answers, references and overlaps; silence on one stem is not silence in the conversation. Whole-block rerecord moves and fine edits have separate authorization. Buffer length is project-specific, not universally 0.5 seconds.
+ - Multitrack defaults to `preserve_source_no_mastering`. Never independently normalize the stems. One integer-frame timeline drives all stems and the Mix; a generated listening Mix is labelled and cannot serve as independent alignment evidence.
+-- For ASR, reuse hash-matching caches first. Role transcription defaults to Qwen FileTrans through the installed Bailian CLI skill, subject to the user's current provider, region, allowance and budget instructions. Solo ASR retains its existing StepFun route. Dual ASR and local alternative-model checks are optional, scoped and costed, not mandatory full reruns. Follow [multitrack ASR and cost boundaries](references/synchronized-multitrack.md#asr-and-cost-boundaries); do not hard-code historical balances or expiry dates.
++- For ASR, reuse matching caches and use [shared ASR routing](../../references/asr-routing.md) for all recording modes. Dual ASR and local alternative-model checks are optional, scoped and costed, not mandatory full reruns. Follow [multitrack ASR and cost boundaries](references/synchronized-multitrack.md#asr-and-cost-boundaries); do not hard-code historical balances or expiry dates.
+ 
+ ## Route the Editorial Branch
+ 
+@@ -79,3 +79,5 @@ Resolve `scripts/`, `references/`, and `assets/` relative to this module. Keep a
+ Choose `solo` by default; `synchronized-multitrack` stays inside audio-edit and retains its own project/plan schemas and integer-frame timebase.
+ The installer reports `paragraph-review`, `preserve-source`, and `synchronized-multitrack` separately. `audio-edit:full` still describes the solo chain, and is not multitrack verification.
+ For standard media production the integration supports paired FFmpeg/FFprobe >=8.1.1; filter-file probing does not reduce this minimum.
++
++Before new transcription, follow [shared ASR routing and ledger](../../references/asr-routing.md).
+diff --git a/modules/video-conform/references/subtitle-workflow.md b/modules/video-conform/references/subtitle-workflow.md
+index 9d94b4c..85037ca 100644
+--- a/modules/video-conform/references/subtitle-workflow.md
++++ b/modules/video-conform/references/subtitle-workflow.md
+@@ -7,17 +7,17 @@ Use this workflow after the approved final timeline is locked, including continu
+ - Search the project and final-video directory for SRT, VTT, ASS, transcripts, timecoded ASR JSON, terminology and listening decisions before transcribing. Record the baseline hash, locked timebase, already-proofread range, editable range and chosen style. Reuse complete compatible caches and approved wording. Do not retranscribe a complete recording solely because proofreading resumes; obtain new results only for missing/unreliable material, or the range explicitly requested for renewed cross-validation.
+ - Probe the selected final media's exact duration and audio stream. Extract the format required by the selected ASR only if a new call is needed. Preserve the original audio.
+ - Keep raw text, provider responses, chunks, alignment data, and QA logs under `work/subtitles-vNN/`; keep them out of `delivery/`.
+-- Use `https://api.stepfun.com/step_plan/v1` as the single StepFun API base. Derive synchronous and asynchronous ASR paths from it and override only through `STEPFUN_API_BASE_URL`.
++- For StepFun, select the authorized billing endpoint using shared routing and set `STEPFUN_API_BASE_URL` where needed. Derive the synchronous and asynchronous paths from that base and confirm the chosen model is available there.
+ - Resolve credentials in this order: macOS Keychain service `STEPFUN_API_KEY`, environment `STEPFUN_API_KEY`, then `STEP_API_KEY`. Never print or persist a raw key.
+ - If the preferred provider is unavailable, stop before switching to a local or different cloud ASR. Obtain user approval for the fallback and disclose its resource/privacy impact.
+ 
+ ## 2. Obtain text and timestamps
+ 
+-For Chinese, use `stepaudio-2.5-asr` for the main text with language `zh` and ITN enabled. Treat its HTTP/SSE text as text only when returned timestamps are all zero or incomplete.
++For Chinese, select main transcription and review through [shared ASR routing](../../../references/asr-routing.md). These StepFun instructions apply only when that provider is selected. Treat its HTTP/SSE text as text only when returned timestamps are all zero or incomplete.
+ 
+ Use a timestamp source that returns real utterance or word boundaries:
+ 
+-1. Prefer StepFun asynchronous file ASR with `step-asr-1.1` and `show_utterances=true`.
++1. When StepFun is selected and the timestamp model and upload are authorized, use asynchronous file ASR with `step-asr-1.1` and `show_utterances=true`.
+ 2. Supply 16 kHz mono MP3/WAV under the provider's size limit through a private or temporary HTTPS URL. Expose only the intended audio. Keep the URL alive until the ASR task reaches a terminal state; an initial GET does not prove the provider will not download again after queueing.
+ 3. Close the tunnel immediately after all tasks finish. Delete any explicitly created provider file object when authorized.
+ 4. Treat `PENDING`, `QUEUED`, `SUBMITTED`, and `RUNNING` as non-terminal. Treat a response with results as success. Preserve the exact error stage and message on failure.
+diff --git a/modules/video-conform/workflow.md b/modules/video-conform/workflow.md
+index be69de2..5601248 100644
+--- a/modules/video-conform/workflow.md
++++ b/modules/video-conform/workflow.md
+@@ -50,3 +50,5 @@ Maintain the repository copy; installed copies are validated runtime copies.
+ The opt-in numeric style/review scope, exact punctuation exceptions, explicitly selected adjacent-cue merges, cue-number mapping and source/zero-duration audit come from pinned upstream PR #4 commit b84c5ed7660721a23bf9abb5f46dbc27984cc144 (OPEN, not merged).
+ Read [subtitle workflow](references/subtitle-workflow.md) and [contextual review](references/subtitle-review.md) for these options. Defaults stay spoken style and uncertain-only review. Unselected/uncertain items remain pending or unchanged; never manufacture time boundaries.
+ These rules apply only here. Do not alter trailer or locked-revision subtitle rules or restart conform/story editing for same-timebase subtitle continuation.
++
++Before new transcription, follow [shared ASR routing and ledger](../../references/asr-routing.md).

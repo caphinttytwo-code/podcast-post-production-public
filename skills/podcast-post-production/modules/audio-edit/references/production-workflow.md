@@ -49,7 +49,7 @@ For exact source-sample proxy manifests, cache binding and legacy timing limits,
 - Run `scripts/transcribe_stepfun.py CHUNKS OUTPUT --dry-run`, inspect order and offsets, then run without `--dry-run`.
 - Use `https://api.stepfun.com/step_plan/v1` as the single StepFun API base; derive service-specific paths from it. Override the base only through `STEPFUN_API_BASE_URL` or `--api-base-url`.
 - Read credentials from `STEPFUN_API_KEY`, then macOS Keychain service `STEPFUN_API_KEY`. Never print the key.
-- Use `stepaudio-2.5-asr` by default for Chinese speech. Add only verified names and domain terms as hotwords.
+- Use [shared ASR routing](../../../references/asr-routing.md) to select the provider and reuse matching caches. Add only verified names and domain terms as hotwords.
 - Review the transcript and waveform together. Treat ASR timecodes as edit guides, not unquestionable acoustic boundaries.
 - If StepFun risk-blocks a five-minute chunk, preserve caches, split only that chunk into about one-minute proxies, and retry. If smaller chunks remain blocked, keep the affected source content, record the gap, and do not guess or silently substitute another ASR.
 
@@ -132,7 +132,7 @@ python3 scripts/render_podcast_edl.py SOURCE EDL episode-vNN.mp3 \
 
 ### 7. Generate the post-edit transcript and perform editorial checks
 
-- Chunk and transcribe the rendered candidate with the same StepAudio model and settings used for the source. Store it under `work/transcript/post-edit-vNN/`.
+- Chunk and transcribe the rendered candidate with the same approved model and settings used for the source. Store it under `work/transcript/post-edit-vNN/`.
 - Treat this transcript as evidence of what listeners actually receive, not as a regenerated source of edit decisions.
 - Complete four editorial checks against the rendered audio and post-edit transcript:
   - sentence integrity: no fragments, missing subjects, broken causality, or clipped word onsets;

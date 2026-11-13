@@ -27,9 +27,20 @@ def main():
      for rel,values in local['files'].items():
       if sha((root/Path(rel).relative_to('skills/podcast-post-production')).read_bytes())!=values['before_sha256']:raise ValueError('Local adapter base mismatch')
      subprocess.run(['git','apply','--unidiff-zero','--check',str(patch)],cwd=root,check=True);subprocess.run(['git','apply','--unidiff-zero',str(patch)],cwd=root,check=True)
+    routing=lock.get('director051_routing',{})
+    module_files={row['runtime'] for row in update['files']}
+    routing_files={rel:v for rel,v in routing.get('files',{}).items() if rel in module_files}
+    if routing_files:
+     patch=REPO/routing['patch']
+     if sha(patch.read_bytes())!=routing['patch_sha256']:raise ValueError('Routing patch fingerprint mismatch')
+     paths=[str(Path(rel).relative_to('skills/podcast-post-production')) for rel in routing_files]
+     for rel,v in routing_files.items():
+      if sha((root/Path(rel).relative_to('skills/podcast-post-production')).read_bytes())!=v['before_sha256']:raise ValueError('Routing base mismatch: '+rel)
+     subprocess.run(['git','apply',*['--include='+rel for rel in paths],str(patch)],cwd=root,check=True)
     for row in update['files']:
      actual=REPO/row['runtime'];adapted=root/Path(row['runtime']).relative_to('skills/podcast-post-production')
      expected=local.get('files',{}).get(row['runtime'],{}).get('after_sha256',row['runtime_sha256'])
+     expected=routing_files.get(row['runtime'],{}).get('after_sha256',expected)
      if sha(actual.read_bytes())!=expected or actual.read_bytes()!=adapted.read_bytes():raise ValueError('Runtime adapter mismatch: '+row['runtime'])
    print(update['mode']+': bundled pinned source and rc63 adapter PASS')
  for row in lock['renderer_updates']+lock.get('asr_security_updates',[]):

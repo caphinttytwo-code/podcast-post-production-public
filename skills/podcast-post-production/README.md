@@ -1,6 +1,6 @@
-# 剪辑导演 — 0.5.0-beta
+# 剪辑导演 — 0.5.1-beta
 
-0.5.0-beta 待确认发布候选；分发技术就绪不代表已发布，安装和切换状态以宿主报告为准。技术 ID 仍为 `podcast-post-production`，现有五模块及旧项目接续方式保留，新增 `editorial-plan` 内容策划入口与显式 `target-runtime` 音频内容分支。
+0.5.1-beta 维护候选，基于已公开的 0.5.0-beta。发行以 GitHub Release 为准，安装和切换状态以宿主报告为准。技术 ID 仍为 `podcast-post-production`，现有五模块及旧项目接续方式保留，新增 `editorial-plan` 内容策划入口与显式 `target-runtime` 音频内容分支。
 
 先读取 [SKILL.md](SKILL.md)。长节目筛选、目标时长取舍与补录位置安排进入 [内容策划](modules/editorial-plan/workflow.md)；单项字幕、封面、校准或审计直接进入原模块，不要求先做全片策划。方案 JSON 是非执行资料，不会产生 EDL 或用户授权。
 

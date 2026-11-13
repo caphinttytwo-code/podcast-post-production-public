@@ -50,3 +50,5 @@ Maintain the repository copy; installed copies are validated runtime copies.
 The opt-in numeric style/review scope, exact punctuation exceptions, explicitly selected adjacent-cue merges, cue-number mapping and source/zero-duration audit come from pinned upstream PR #4 commit b84c5ed7660721a23bf9abb5f46dbc27984cc144 (OPEN, not merged).
 Read [subtitle workflow](references/subtitle-workflow.md) and [contextual review](references/subtitle-review.md) for these options. Defaults stay spoken style and uncertain-only review. Unselected/uncertain items remain pending or unchanged; never manufacture time boundaries.
 These rules apply only here. Do not alter trailer or locked-revision subtitle rules or restart conform/story editing for same-timebase subtitle continuation.
+
+Before new transcription, follow [shared ASR routing and ledger](../../references/asr-routing.md).
