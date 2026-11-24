@@ -1,14 +1,18 @@
 import json
+import contextlib
+import io
 from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from locked_evidence import check
 import hashlib
+import validate_locked_revision as validator
 
 
 class ExactEvidenceTests(unittest.TestCase):
@@ -82,3 +86,47 @@ class ExactEvidenceTests(unittest.TestCase):
             run = subprocess.run([sys.executable, "-B", script, manifest, "--report", report,
                                   "--ffprobe", self.ffprobe, "--ffmpeg", self.ffmpeg], capture_output=True)
             self.assertEqual(json.loads(report.read_bytes())["status"], expected, run.stderr)
+
+    def test_stdout_matches_file_report_without_writes_or_temporary_files(self):
+        output = self.root / "within.nut"
+        self.make(output, edit="0")
+        manifest = self.root / "manifest.json"
+        manifest.write_text(json.dumps({**self.manifest, "schema_version": 2, "source": self.source.name,
+                                       "source_sha256": hashlib.sha256(self.source.read_bytes()).hexdigest(),
+                                       "output": output.name}))
+        report = self.root / "report.json"
+        script = Path(validator.__file__)
+        command = [sys.executable, "-B", script, manifest, "--ffmpeg", self.ffmpeg, "--ffprobe", self.ffprobe]
+        control = subprocess.run([*command, "--report", report], text=True, capture_output=True)
+        self.assertEqual(control.returncode, 0, control.stderr)
+        expected = json.loads(report.read_bytes())
+        before = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in self.root.iterdir()}
+        captured = io.StringIO()
+        with (patch.object(sys, "argv", [str(p) for p in [*command[2:], "--stdout"]]),
+              patch.object(Path, "write_text", side_effect=AssertionError("Unexpected file write")),
+              patch.object(Path, "mkdir", side_effect=AssertionError("Unexpected directory write")),
+              patch("tempfile.TemporaryFile", side_effect=AssertionError("Unexpected temporary file")),
+              contextlib.redirect_stdout(captured)):
+            code = validator.main()
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads(captured.getvalue()), expected)
+        self.assertEqual(before, {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in self.root.iterdir()})
+
+    def test_stdout_cli_preserves_fail_and_blocked_exit_codes(self):
+        output = self.root / "outside.nut"
+        self.make(output, edit="16")
+        manifest = self.root / "manifest.json"
+        data = {**self.manifest, "schema_version": 2, "source": self.source.name,
+                "source_sha256": hashlib.sha256(self.source.read_bytes()).hexdigest(), "output": output.name}
+        command = [sys.executable, "-B", validator.__file__, manifest, "--stdout",
+                   "--ffmpeg", self.ffmpeg, "--ffprobe", self.ffprobe]
+        for missing_map, expected, code in [(False, "FAIL", 1), (True, "BLOCKED", 2)]:
+            if missing_map:
+                data.pop("time_map")
+            manifest.write_text(json.dumps(data))
+            result = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(result.returncode, code, result.stderr)
+            self.assertEqual(json.loads(result.stdout)["status"], expected)
+        both = subprocess.run([*command, "--report", self.root / "forbidden.json"], capture_output=True)
+        self.assertEqual(both.returncode, 2)
+        self.assertFalse((self.root / "forbidden.json").exists())

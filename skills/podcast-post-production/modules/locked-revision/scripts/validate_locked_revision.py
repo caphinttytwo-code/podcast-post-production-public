@@ -116,7 +116,9 @@ def validate_srt_end(path: Path, duration: float) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("manifest", type=Path)
-    parser.add_argument("--report", required=True, type=Path)
+    destination = parser.add_mutually_exclusive_group(required=True)
+    destination.add_argument("--report", type=Path)
+    destination.add_argument("--stdout", action="store_true", help="Print the full JSON report without creating files")
     parser.add_argument("--ffprobe", default="ffprobe")
     parser.add_argument("--ffmpeg", default="ffmpeg")
     args = parser.parse_args()
@@ -152,7 +154,8 @@ def main() -> int:
             probe_blocker = str(exc)
     output_subtitle = manifest.get("output_subtitle")
     subtitles = [resolved(base, manifest[key]) for key in ("source_subtitle", "output_subtitle") if manifest.get(key)]
-    distinct_output(args.report, source, output, *subtitles)
+    if args.report:
+        distinct_output(args.report, manifest_path, source, output, *subtitles)
     if output_subtitle and output_probe:
         subtitle_path = resolved(base, output_subtitle)
         if not subtitle_path.is_file():
@@ -190,9 +193,12 @@ def main() -> int:
         "technical_qa": status.lower(),
         "human_full_review": "not_recorded", "release_ready": False,
     }
-    args.report.parent.mkdir(parents=True, exist_ok=True)
-    args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"ok": report["ok"], "errors": len(errors)}, ensure_ascii=False))
+    if args.stdout:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    else:
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps({"ok": report["ok"], "errors": len(errors)}, ensure_ascii=False))
     return 0 if report["ok"] else 2 if status == "BLOCKED" else 1
 
 

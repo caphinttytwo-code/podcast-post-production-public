@@ -32,3 +32,5 @@ Make the smallest explicitly requested change to an approved master and prove wh
 - [references/multitrack-join-qa.md](references/multitrack-join-qa.md): safe joins and required audio checks.
 - `scripts/retime_srt.py`: remove deleted cues, shift later cues, and emit a change report.
 - `scripts/validate_locked_revision.py`: validate source identity, expected duration, stream locks, subtitles, hashes, and release state.
+
+仅请求只读验收时，使用验证器 --stdout 输出完整 JSON，见 [清单与只读入口](references/revision-manifest.md)。

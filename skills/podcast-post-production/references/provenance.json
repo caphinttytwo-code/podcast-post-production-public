@@ -1,5 +1,5 @@
 {
-  "candidate_version": "0.6.0-beta",
+  "candidate_version": "0.6.1-beta",
   "modules": [
     {
       "mode": "audio-edit",
@@ -270,5 +270,15 @@
     "reason": "User requested a larger Beta version step while preserving technical ID and behavior",
     "new_media_or_asr": false,
     "published": false
+  },
+  "director061": {
+    "base_release": "0.6.0-beta",
+    "base_commit": "bcd97bc9e03985c28ec4f47753d20a95b59abc9a",
+    "base_zip_sha256": "2943a11c9b6a46bad83304dfde63afbe8fd104dfc524d60e239d5bd255bcf1a1",
+    "scope": [
+      "ASR cache coverage and timing evidence",
+      "planned versus actual submission reporting",
+      "locked-revision stdout without report or temporary files"
+    ]
   }
 }

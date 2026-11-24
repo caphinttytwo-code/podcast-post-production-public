@@ -35,3 +35,11 @@ Schema 2 沿用上述字段并要求父版 SHA-256。提供 `time_map`，每段�
 - `picture_changes` 每条含输出轴 `start`、`end`。指定 `region: [x,y,width,height]` 时仅允许该矩形内差异，省略 region 时整帧可变。比较原生 yuv420p、yuv444p 或 rgb24 的解码样本，YUV420 区域边界须按偶数像素对齐。像素格式、颜色元数据与帧时间戳需要可精确对齐。
 - `audio_changes` 每条含从零开始的 `track`、父版 `source: {start,end}` 与新版 `output: {start,end}`。按包边界记录已批准的变化。保留的各音轨按映射后的实际 PTS 比较负载 SHA-256、时长和包侧数据。
 - 运行原验证命令，可用 `--ffmpeg` 指定配对媒体工具。缺少映射、原生格式不支持或无法按时间戳建立配对时报告 BLOCKED。实际检测到锁定区变化时报告 FAIL，并列出对应轨号或帧时间戳。通过后仍需按项目记录人工审看和试听。
+
+## 只读验证
+
+运行 python modules/locked-revision/scripts/validate_locked_revision.py MANIFEST.json --stdout，
+可显式指定 --ffmpeg 和 --ffprobe。完整报告打印至标准输出，不创建报告目录或临时解码文件。
+使用环境绑定的解释器及 -B 可避免字节码。--stdout 与旧 --report PATH 二选一，
+两者使用相同校验和状态，退出码仍为 PASS=0、FAIL=1、BLOCKED=2。缺映射保持 BLOCKED。
+报告可包含素材路径和内容哈希，由用户在包外保管。

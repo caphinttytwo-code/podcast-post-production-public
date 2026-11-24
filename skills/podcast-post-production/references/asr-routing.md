@@ -18,3 +18,18 @@
 `python scripts/asr_route.py record PLAN.json ATTEMPT.json --project PROJECT`
 
 传入真实尝试的 `segment_id`、`attempt`、`status`、`timestamp`、`request_id`，以及可得的 `input_tokens`、`output_tokens`、`quota_verification`、`price_checked_date`、`estimated_cost_cny`、`actual_cost_cny`。追加到项目包外 `asr-cost-ledger.jsonl`。未知用量和费用填 null。账本不接收原始响应、临时地址或密钥。
+
+## 缓存覆盖与时间戳报告
+
+计划始终输出 requested_coverage、cached_coverage、planned_submission_seconds 和 actual_submission_seconds。
+覆盖范围按采样帧半开区间求并集，另列源总时长和 covers_source。CACHE_HIT 只表示请求范围内缓存命中。
+
+每个条目的 timestamp_evidence 区分纯 text JSON 的 MISSING、检测到常见时间戳容器的 PRESENT_UNVERIFIED、
+无法解释的响应 UNKNOWN 和无有效缓存 NO_VALID_CACHE。字幕模式的 subtitle_readiness 保持 NEEDS_TIMING_VALIDATION，
+须由对应模块核实格式、真实时间、来源和成片映射。时间戳字段存在本身不提供可用字幕证据。
+
+规划阶段 actual_submission_seconds 恒为 0。旧 submitted_seconds 字段保留原语义，表示计划提交时长，
+新增 planned_submission_seconds 表达同一计划量。记录实际尝试时，成功结果或 submission_confirmed=true
+可记录完整请求区间的提交时长；明确 submission_confirmed=false 记录 0，其他失败或待定结果保持 null，
+含只有请求 ID 的失败。submitted_seconds 旧账本字段继续表示所记录尝试的区间时长。
+未知实际用量、账单及费用仍为 null，不从计划量推定真实扣费。

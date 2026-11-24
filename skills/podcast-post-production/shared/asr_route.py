@@ -43,6 +43,41 @@ def ranges(items, frames):
     return output
 
 
+def coverage(items, sample_rate, source_frames):
+    """Report the union, so overlapping requests do not inflate coverage."""
+    merged = []
+    for item in sorted(items, key=lambda row: (row["start_frame"], row["end_frame"])):
+        start, end = item["start_frame"], item["end_frame"]
+        if merged and start <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    covered = sum(end - start for start, end in merged)
+    return {"source_frames": source_frames, "source_seconds": source_frames / sample_rate,
+            "ranges_frames": merged, "covered_frames": covered,
+            "covered_seconds": covered / sample_rate, "covers_source": covered == source_frames}
+
+
+def cache_timing(response):
+    """Describe raw evidence only; provider formats need their own timing checks."""
+    try:
+        data = json.loads(response.read_bytes())
+    except (OSError, ValueError):
+        return "UNKNOWN"
+    if isinstance(data, dict):
+        for field in ("segments", "words", "utterances"):
+            rows = data.get(field)
+            if isinstance(rows, list) and rows and all(
+                isinstance(row, dict) and any(start in row and end in row for start, end in
+                    (("start", "end"), ("start_time", "end_time"), ("begin_time", "end_time")))
+                for row in rows
+            ):
+                return "PRESENT_UNVERIFIED"
+        if set(data) == {"text"} and isinstance(data["text"], str):
+            return "MISSING"
+    return "UNKNOWN"
+
+
 def plan(spec, directory):
     if spec["purpose"] not in ("primary", "review") or spec["mode"] not in ("solo", "multitrack", "subtitles"):
         raise ValueError("Unknown transcription mode or purpose")
@@ -70,6 +105,10 @@ def plan(spec, directory):
     result = {"status": "SELECT_PROVIDER", "route": None, "segments": entries,
               "source_sha256": source_hash, "sample_rate": rate, "frames": frames, "timebase": timeline,
               "purpose": purpose, "mode": spec["mode"], "model_calls": 0, "uploads": 0}
+    result.update(requested_coverage=coverage(entries, rate, frames),
+                  cached_coverage=coverage([], rate, frames),
+                  planned_submission_seconds=0, actual_submission_seconds=0,
+                  subtitle_readiness="NEEDS_TIMING_VALIDATION" if spec["mode"] == "subtitles" else "NOT_APPLICABLE")
     if route is None:
         result["choices"] = ["bailian-cli", "stepfun"]
         return result
@@ -105,6 +144,8 @@ def plan(spec, directory):
         item["action"] = ("reuse" if raw else
                           "pending" if matched and old.get("status") in ("pending", "unknown") else
                           "retry" if matched and old.get("status") == "failed" else "submit")
+        item["timestamp_evidence"] = cache_timing(raw) if raw else "NO_VALID_CACHE"
+    result["cached_coverage"] = coverage([item for item in entries if item["action"] == "reuse"], rate, frames)
     if all(item["action"] == "reuse" for item in entries):
         result["status"] = "CACHE_HIT"
         return result
@@ -115,6 +156,7 @@ def plan(spec, directory):
         return result
     submit_frames = sum(item["end_frame"] - item["start_frame"] for item in submit)
     result["submitted_seconds"] = submit_frames / rate
+    result["planned_submission_seconds"] = submit_frames / rate
     result["estimated_cost_cny"] = None
     # A price is optional evidence, never an inferred account entitlement.
     price = spec.get("verified_hourly_price_cny")
@@ -180,9 +222,17 @@ def ledger_row(planned, attempt):
     for field in ("timestamp", "request_id", "price_checked_date", "quota_verification"):
         if attempt.get(field) is not None:
             label(attempt[field], field)
+    confirmed = attempt.get("submission_confirmed")
+    if confirmed is not None and type(confirmed) is not bool:
+        raise ValueError("submission_confirmed must be a boolean")
+    if confirmed is False and attempt.get("request_id"):
+        raise ValueError("Provider request ID conflicts with unsubmitted attempt")
+    duration = (item["end_frame"] - item["start_frame"]) / binding["sample_rate"]
+    actual = duration if confirmed is True or state == "complete" else 0 if confirmed is False else None
     return {**{k: v for k, v in binding.items() if k != "entrypoint"}, **item,
             "timestamp": label(attempt["timestamp"], "timestamp"),
             "submitted_seconds": (item["end_frame"] - item["start_frame"]) / binding["sample_rate"],
+            "planned_submission_seconds": duration, "actual_submission_seconds": actual,
             "request_id": attempt.get("request_id"), "attempt": count, "status": state,
             "input_tokens": optional_number(attempt.get("input_tokens"), "input tokens"),
             "output_tokens": optional_number(attempt.get("output_tokens"), "output tokens"),

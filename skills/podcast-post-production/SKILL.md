@@ -2,12 +2,12 @@
 name: podcast-post-production
 description: 剪辑导演（Beta）：为长播客、访谈和圆桌制定内容筛选、目标时长与补录放置方案；也执行已确认的音频精剪、同步多轨装配、视频对版、片花包装、字幕局部修订及项目审计。只出方案、只修字幕/封面/接点或只清理时按对应分支处理，不自动扩大为整片重剪。
 metadata:
-  version: "0.6.0-beta"
+  version: "0.6.1-beta"
 ---
 
 # 剪辑导演 — Beta
 
-This is **0.6.0-beta**, a Beta under the inherited MIT license. It is not a stable release; actual installation and activation status come from host-side reports. The technical Skill ID remains `podcast-post-production`; “播客音视频后期” is the prior display name.
+This is **0.6.1-beta**, a Beta under the inherited MIT license. It is not a stable release; actual installation and activation status come from host-side reports. The technical Skill ID remains `podcast-post-production`; “播客音视频后期” is the prior display name.
 
 Choose the workflow for the user's actual requested output. This is a standalone six-module package; it does not require the former individual Skills to be installed. Existing project schemas, EDLs and module commands are retained. A local runtime profile remains bound to its exact package identity and requires revalidation before any future switch. For candidate lineage and handoff, read [local upgrade status](references/local-050-upgrade.md).
 
@@ -53,4 +53,4 @@ Resolve scripts relative to this package or the selected module; existing script
 - For the inherited baseline, read [rc6.3 changes](references/rc63-changes.md); current local changes and handoff are in [local upgrade status](references/local-050-upgrade.md).
 - For migration lineage and retained license notices, read [provenance](references/provenance.json) and [NOTICE](NOTICE.md).
 
-This is a public Beta prerelease. Users may explicitly choose the bundled installer and tests. Development or a technical pass does not authorize switching existing installations, editing media, uploading, cleanup or publishing. Full human listening/viewing remains a separate project record.
+This is a local Beta candidate. Users may explicitly choose the bundled installer and tests. Development or a technical pass does not authorize switching existing installations, editing media, uploading, cleanup or publishing. Full human listening/viewing remains a separate project record.

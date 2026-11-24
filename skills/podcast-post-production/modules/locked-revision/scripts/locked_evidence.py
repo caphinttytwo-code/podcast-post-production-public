@@ -3,7 +3,6 @@ from contextlib import contextmanager
 from fractions import Fraction
 import json
 import subprocess
-import tempfile
 
 
 class EvidenceUnavailable(ValueError):
@@ -123,18 +122,17 @@ def same_outside(left, right, layout, rect):
 
 @contextmanager
 def decode(ffmpeg, path, format_name):
-    with tempfile.TemporaryFile() as errors:
-        child = subprocess.Popen([ffmpeg, "-nostdin", "-v", "error", "-xerror", "-noautorotate", "-i", str(path),
-                                  "-map", "0:v:0", "-an", "-sn", "-dn", "-fps_mode", "passthrough",
-                                  "-pix_fmt", "+" + format_name, "-f", "rawvideo", "-"], stdout=subprocess.PIPE,
-                                 stderr=errors)
-        try:
-            yield child
-        finally:
-            child.stdout.close()
-            if child.poll() is None:
-                child.terminate()
-            child.wait()
+    child = subprocess.Popen([ffmpeg, "-nostdin", "-v", "error", "-xerror", "-noautorotate", "-i", str(path),
+                              "-map", "0:v:0", "-an", "-sn", "-dn", "-fps_mode", "passthrough",
+                              "-pix_fmt", "+" + format_name, "-f", "rawvideo", "-"], stdout=subprocess.PIPE,
+                             stderr=subprocess.DEVNULL)
+    try:
+        yield child
+    finally:
+        child.stdout.close()
+        if child.poll() is None:
+            child.terminate()
+        child.wait()
 
 
 def verify_picture(manifest, source, output, spans, ffprobe, ffmpeg):
