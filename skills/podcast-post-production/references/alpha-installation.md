@@ -1,6 +1,6 @@
 # 一个包内完成检测、测试与安装
 
-版本 0.6.1-beta，本地开发候选，基于公开 0.6.0-beta。核对交付 ZIP 的外部 SHA-256 后解压。包内安装入口检查完整文件清单，安装前选定宿主、目标与功能范围。候选的本地验证不触发发行或运行版切换。
+版本 0.6.1-beta，公开 Beta 预发布版，基于 0.6.0-beta。从 [GitHub Release](https://github.com/caphinttytwo-code/podcast-post-production-public/releases/tag/v0.6.1-beta) 下载完整 ZIP 和 SHA256SUMS.txt，先核对外部 SHA-256 再解压。安装前选定宿主、目标和功能范围，包内安装入口会检查文件清单。
 
 ## 安装前
 
@@ -41,7 +41,7 @@ python3 -B scripts/setup_skill.py install --work-dir /ABS/NEW/setup --dest /ABS/
 
 所有报告、夹具、venv、缓存和项目媒体必须在包外。返回 report.md、JSON、日志和证据哈希；人工审听／审看仍单独记录。失败后保留本轮证据，在新目录重试。
 
-本包为 **0.6.1-beta 本地开发候选**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。
+本包为 **0.6.1-beta 公开预发布版**，按 MIT 及保留的来源许可分发，非稳定版。新转写拒绝所有跳转；操作及缓存边界见 [asr-security.md](asr-security.md)。
 
 ## macOS 宿主升级后的复验
 

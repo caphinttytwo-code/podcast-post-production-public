@@ -19,8 +19,6 @@
   "published": false,
   "channel": "beta",
   "distribution": "public-beta",
-  "public_distribution_ready": false,
-  "public_distribution_blockers": [
-    "Local 0.6.1 candidate awaiting distribution review and explicit publication approval"
-  ]
+  "public_distribution_ready": true,
+  "public_distribution_blockers": []
 }

@@ -1,0 +1,13 @@
+{
+  "version": "0.6.1-beta",
+  "tree_sha256": "181d09af4f3a04cc8f2f7a9adc742831b6121993028c2f5068ac13026fc44766",
+  "files": 181,
+  "manifest_sha256": "556c61745a5cc35b58b59cb36c99b1df98dc8aaa26f65b5608d0569e1ca0a951",
+  "archive": "podcast-post-production-v0.6.1-beta.zip",
+  "archive_sha256": "0ebe1fa99ac7e908a23bdd556d1bec1f78fec1987453005ca819dbc217337a92",
+  "channel": "beta",
+  "distribution": "public-beta",
+  "public_distribution_ready": true,
+  "release_ready": false,
+  "human_full_review": "NOT RUN"
+}
